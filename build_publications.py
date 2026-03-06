@@ -76,10 +76,10 @@ def format_authors(raw: str) -> str:
 
 def parse_bibs(folder: str = "publications") -> list[dict]:
     entries = []
-    parser = BibTexParser()
-    parser.customization = convert_to_unicode
 
     for bib_file in glob.glob(f"{folder}/*.bib"):
+        parser = BibTexParser()
+        parser.customization = convert_to_unicode
         with open(bib_file, encoding="utf-8") as f:
             db = bibtexparser.load(f, parser=parser)
         for e in db.entries:
