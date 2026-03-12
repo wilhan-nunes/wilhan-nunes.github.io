@@ -74,6 +74,40 @@ def format_authors(raw: str) -> str:
         return ", ".join(short[:6]) + " et al."
     return ", ".join(short)
 
+def parse_month(raw_month: str) -> int:
+    """Convert BibTeX month field to month number (1-12), defaulting to 0."""
+    if not raw_month:
+        return 0
+
+    month_text = clean_latex(str(raw_month)).strip().lower()
+    month_text = month_text.strip("{}")
+
+    month_map = {
+        "jan": 1, "january": 1,
+        "feb": 2, "february": 2,
+        "mar": 3, "march": 3,
+        "apr": 4, "april": 4,
+        "may": 5,
+        "jun": 6, "june": 6,
+        "jul": 7, "july": 7,
+        "aug": 8, "august": 8,
+        "sep": 9, "sept": 9, "september": 9,
+        "oct": 10, "october": 10,
+        "nov": 11, "november": 11,
+        "dec": 12, "december": 12,
+    }
+
+    if month_text in month_map:
+        return month_map[month_text]
+
+    number_match = re.search(r"\d+", month_text)
+    if number_match:
+        month_num = int(number_match.group())
+        if 1 <= month_num <= 12:
+            return month_num
+
+    return 0
+
 def parse_bibs(folder: str = "publications") -> list[dict]:
     entries = []
 
@@ -84,10 +118,14 @@ def parse_bibs(folder: str = "publications") -> list[dict]:
             db = bibtexparser.load(f, parser=parser)
         for e in db.entries:
             entry_type = e.get("ENTRYTYPE", "article").lower()
-            pub_type = "preprint" if entry_type == "preprint" else "article"
+            preprint_servers = {"chemrxiv", "biorxiv", "medrxiv", "research square", "arxiv"}
+            journal = e.get("journal", "").lower()
+            pub_type = "preprint" if any(s in journal for s in preprint_servers) else "article"
+            # pub_type = "preprint" if entry_type == "preprint" else "article"
             entries.append({
                 "type":    pub_type,
                 "year":    int(e.get("year", 0)),
+                "month":   parse_month(e.get("month", "")),
                 "authors": format_authors(clean_latex(e.get("author", ""))),
                 "title":   clean_latex(e.get("title", "")),
                 "journal": clean_latex(e.get("journal", e.get("booktitle", ""))),
@@ -96,7 +134,7 @@ def parse_bibs(folder: str = "publications") -> list[dict]:
                 "doi":     e.get("doi", "").strip(),
             })
 
-    return sorted(entries, key=lambda x: -x["year"])
+    return sorted(entries, key=lambda x: (x["year"], x["month"]), reverse=True)
 
 def group_by_year(entries: list[dict]):
     from itertools import groupby
