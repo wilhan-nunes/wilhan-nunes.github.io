@@ -1,27 +1,832 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Portfolio</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wilhan Nunes, Ph.D. — CV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&family=DM+Mono:wght@300;400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #f9f8f5;
+      --ink:     #18181a;
+      --muted:   #6b6b72;
+      --accent:  #1e5fa8;
+      --accent2: #0f3d72;
+      --line:    #e2e0d8;
+      --card:    #f0ede4;
+      --badge:   #dbeafe;
+      --badge-ink: #1e40af;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .wrapper { max-width: 860px; margin: 0 auto; padding: 0 2rem; }
+
+    /* ── Header ── */
+    header {
+      padding: 4.5rem 0 3rem;
+      border-bottom: 1px solid var(--line);
+      opacity: 0; transform: translateY(18px);
+      animation: fadeUp 0.65s ease forwards;
+    }
+
+    .hd-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .hd-name h1 {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: clamp(2rem, 5.5vw, 3.4rem);
+      font-weight: 600;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+    }
+
+    .hd-name h1 em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--accent);
+    }
+
+    .hd-name .degree {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 0.5rem;
+    }
+
+    .hd-name .title-role {
+      margin-top: 0.3rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    .hd-contact {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-align: right;
+      padding-top: 0.4rem;
+    }
+
+    .hd-contact a { color: var(--ink); border-bottom: 1px solid var(--line); transition: border-color 0.2s, color 0.2s; }
+    .hd-contact a:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0;
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
+      z-index: 10;
+      padding: 0.9rem 0;
+    }
+
+    nav ul { list-style: none; display: flex; gap: 2rem; flex-wrap: wrap; }
+
+    nav a {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: var(--ink); text-decoration: none; }
+
+    /* ── Sections ── */
+    section {
+      padding: 3.5rem 0;
+      border-bottom: 1px solid var(--line);
+      opacity: 0; transform: translateY(14px);
+      animation: fadeUp 0.55s ease forwards;
+    }
+
+    section:nth-of-type(1) { animation-delay: 0.05s; }
+    section:nth-of-type(2) { animation-delay: 0.12s; }
+    section:nth-of-type(3) { animation-delay: 0.19s; }
+    section:nth-of-type(4) { animation-delay: 0.26s; }
+    section:nth-of-type(5) { animation-delay: 0.33s; }
+    section:nth-of-type(6) { animation-delay: 0.40s; }
+
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.75rem;
+    }
+
+    /* ── About ── */
+    .about-text {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      font-weight: 300;
+      line-height: 1.7;
+      color: #2a2a30;
+      max-width: 700px;
+    }
+
+    /* ── Experience / Projects ── */
+    .entry {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 0 2rem;
+      padding: 1.6rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .entry:last-child { border-bottom: none; }
+
+    .entry-date {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      padding-top: 0.25rem;
+      letter-spacing: 0.04em;
+    }
+
+    .entry-content h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.1rem; }
+    .entry-content .org { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.55rem; }
+    .entry-content p { font-size: 0.88rem; color: #3a3a44; line-height: 1.7; }
+    .entry-content ul { padding-left: 1.1rem; margin-top: 0.4rem; }
+    .entry-content ul li { font-size: 0.88rem; color: #3a3a44; margin-bottom: 0.35rem; line-height: 1.65; }
+
+    /* ── Skills ── */
+    .skills-table { width: 100%; border-collapse: collapse; }
+
+    .skills-table tr { border-bottom: 1px solid var(--line); }
+    .skills-table tr:last-child { border-bottom: none; }
+
+    .skills-table td {
+      padding: 0.85rem 0;
+      font-size: 0.88rem;
+      vertical-align: top;
+    }
+
+    .skills-table td:first-child {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      width: 160px;
+      padding-right: 1.5rem;
+      padding-top: 1rem;
+    }
+
+    /* ── Publications ── */
+    .pub-year-group { margin-bottom: 2rem; }
+
+    .pub-year {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      background: var(--badge);
+      color: var(--badge-ink);
+      padding: 0.2rem 0.6rem;
+      border-radius: 3px;
+      margin-bottom: 0.9rem;
+    }
+
+    .pub-list { display: flex; flex-direction: column; gap: 0; }
+
+    .pub-entry {
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .pub-entry:last-child { border-bottom: none; }
+
+    .pub-authors {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+    }
+
+    .pub-title {
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 0.25rem;
+      line-height: 1.5;
+    }
+
+    .pub-venue {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .pub-venue a {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      margin-left: 0.4rem;
+    }
+
+    .badge {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: #fef9c3;
+      color: #854d0e;
+      border-radius: 3px;
+      padding: 0.1rem 0.45rem;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+
+    /* ── Education ── */
+    .edu-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--line);
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .edu-row:last-child { border-bottom: none; }
+
+    .edu-row h3 { font-weight: 500; font-size: 0.9rem; }
+    .edu-row .inst { font-size: 0.82rem; color: var(--muted); margin-top: 0.1rem; }
+    .edu-row .year {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* ── Footer ── */
+    footer {
+      padding: 2.5rem 0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    /* ── Animation ── */
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+    /* ── Responsive ── */
+    @media (max-width: 580px) {
+      .entry { grid-template-columns: 1fr; gap: 0.2rem; }
+      .entry-date { margin-bottom: 0.5rem; }
+      .hd-contact { text-align: left; }
+      .skills-table td:first-child { width: 110px; }
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Welcome to My Portfolio</h1>
-        <nav>
-            <ul>
-                <li><a href="#">Home</a></li>
-                <li><a href="#">About</a></li>
-                <li><a href="#">Contact</a></li>
-            </ul>
-        </nav>
-    </header>
-    <section>
-        <h2>About Me</h2>
-        <p>Passionate web developer and designer.</p>
-    </section>
-    <footer>
-        <p>Contact me at: <a href="mailto:example@example.com">example@example.com</a></p>
-    </footer>
+<div class="wrapper">
+
+  <!-- ── Header ── -->
+  <header>
+    <div class="hd-top">
+      <div class="hd-name">
+        <h1>Wilhan <em>Nunes</em></h1>
+        <p class="degree">Ph.D. in Chemistry</p>
+        <p class="title-role">Research Staff Associate II · Computational Metabolomics</p>
+      </div>
+      <div class="hd-contact">
+        <a href="mailto:wdgnsl@gmail.com">wdgnsl@gmail.com</a>
+        <a href="tel:+16193220920">+1 619 322 0920</a>
+        <span>University of California, San Diego</span>
+        <span>La Jolla, CA 92093</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Nav ── -->
+  <nav>
+    <ul>
+      <li><a href="#about">About</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#publications">Publications</a></li>
+      <li><a href="#education">Education</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── About ── -->
+  <section id="about">
+    <p class="section-label">Profile</p>
+    <p class="about-text">
+      Research Staff Associate II specializing in computational metabolomics at UC San Diego.
+      My work spans the creation and curation of microbial metabolite databases, development of
+      mass spectrometry-based analytical workflows, and web-based tools that bridge experts and
+      non-experts in the metabolomics field. With over a decade of academic experience across
+      multiple institutions in Brazil and the US, I bring a track record in both research and teaching.
+    </p>
+  </section>
+
+  <!-- ── Projects ── -->
+  <section id="projects">
+    <p class="section-label">Research Projects</p>
+
+    <div class="entry">
+      <div class="entry-date">2024 — Present</div>
+      <div class="entry-content">
+        <h3>Computational Metabolomics &amp; Resource Development</h3>
+        <p class="org">Dr. Pieter C. Dorrestein · Skaggs School of Pharmacy, UC San Diego</p>
+        <ul>
+          <li><strong>Microbial metabolite knowledgebase:</strong> Development of the Collaborative Microbial Metabolite Center knowledgebase (CMMC-kb), integrating spectral and structural data of microbial metabolites with biological information including producers, bioactivity, and biosynthesis.</li>
+          <li><strong>Open science tools:</strong> Designed and coded the user interface for MetaboApps — a suite of modular web applications delivering accessible, standardized GNPS-based metabolomics workflows to the broader scientific community.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-date">2015 — 2018</div>
+      <div class="entry-content">
+        <h3>Synthesis and Thermoanalysis of Lanthanide/Yttrium Isonicotinates</h3>
+        <p class="org">Doctoral thesis · Dr. Flavio J. Caires &amp; Dr. Massao Ionashiro · UNESP, Brazil</p>
+        <p>Synthesized and characterized Ln(III)/Y(III) isonicotinate complexes and evaluated their thermal behavior using TGA, DSC, XRD, and wet-chemistry analysis. Funded by CAPES doctoral scholarship.</p>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-date">2013 — 2015</div>
+      <div class="entry-content">
+        <h3>Synthesis and Thermoanalysis of Lanthanide Isophthalates</h3>
+        <p class="org">Master's dissertation · Dr. Elias Y. Ionashiro · UFG, Brazil</p>
+        <p>Prepared and characterized isophthalate complexes of La(III), Ce(III), Pr(III), Nd(III), Sm(III), Eu(III), and Gd(III), correlating structure with thermal stability via TGA, DSC, and XRD. Supported by CAPES scholarship.</p>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-date">2009 — 2013</div>
+      <div class="entry-content">
+        <h3>Low-cost Thin-Film Fabrication &amp; Instrumentation</h3>
+        <p class="org">Undergraduate research · Dr. George Barbosa da Silva · UFMT, Brazil</p>
+        <p>Fabricated SnO₂ conductive glass electrodes via spray-pyrolysis and designed dip-coating and spin-coating apparatus using low-cost electronics. Funded annually by CNPq research scholarship.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Experience ── -->
+  <section id="experience">
+    <p class="section-label">Past Professional Experience</p>
+
+    <div class="entry">
+      <div class="entry-date">2022 — 2023</div>
+      <div class="entry-content">
+        <h3>Chemistry Professor</h3>
+        <p class="org">Federal Institute of Education, Science and Technology of São Paulo (IFSP) · Ilha Solteira, SP, Brazil</p>
+        <p>Delivered Chemistry for Technical Degree tracks in Civil Construction Design and Building.</p>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-date">2018 — 2021</div>
+      <div class="entry-content">
+        <h3>Chemistry Professor</h3>
+        <p class="org">Federal Institute of Education, Science and Technology of Rondônia (IFRO) · Ji-Paraná, Brazil</p>
+        <p>Led courses in General, Physical, Analytical &amp; Organic Chemistry (Licentiate) and General &amp; Physical Chemistry (Technical tracks).</p>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-date">Feb – Jul 2018</div>
+      <div class="entry-content">
+        <h3>Temporary Chemistry Professor</h3>
+        <p class="org">Federal University of Mato Grosso (UFMT) · Barra do Garças, MT, Brazil</p>
+        <p>Lectured Physical &amp; Analytical Chemistry across Chemistry, Pharmacy, and Food Engineering programs.</p>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-date">Aug 2017 – Jan 2018</div>
+      <div class="entry-content">
+        <h3>Chemistry Professor Internship</h3>
+        <p class="org">Faculty of Sciences, UNESP (Chemistry Department) · Bauru, SP, Brazil</p>
+        <p>Led experimental classes in the General and Inorganic Chemistry Laboratory for the Physics undergraduate program.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Skills ── -->
+  <section id="skills">
+    <p class="section-label">Skills</p>
+    <table class="skills-table">
+      <tr>
+        <td>Computational</td>
+        <td>Big data mining · Web application development for metabolomics · Workflow automation · Nextflow · Docker · Git (branching, rebase, submodules) · Database development · MS/MS data acquisition &amp; analysis · Python · R · Bash · Arduino</td>
+      </tr>
+      <tr>
+        <td>Wet Lab</td>
+        <td>Sample preparation for LC-MS metabolomics · Chromatographic method development, optimization, and validation</td>
+      </tr>
+      <tr>
+        <td>Software</td>
+        <td>GNPS · MZmine · ChemDraw · Cytoscape · Inkscape</td>
+      </tr>
+      <tr>
+        <td>Languages</td>
+        <td>Portuguese (native) · English (fluent) · French (basic) · Spanish (basic)</td>
+      </tr>
+      <tr>
+        <td>Soft Skills</td>
+        <td>Teamwork · Leadership · Scientific communication · Interpersonal skills</td>
+      </tr>
+    </table>
+  </section>
+
+  <!-- ── Publications ── -->
+  <section id="publications">
+    <p class="section-label">Publications</p>
+    <!-- PUB_START -->
+
+<div class="pub-year-group">
+  <span class="pub-year">2026</span>
+  <div class="pub-list">
+    <div class="pub-entry article">
+      <p class="pub-authors">Xing S., Patan A., Agongo J., Gouda H., Charron-Lamoureux V., El Abiead Y. et al.</p>
+      <p class="pub-title">Navigating the conjugated metabolome
+      </p>
+      <p class="pub-venue">
+        <em></em>.
+        <a href="https://doi.org/10.64898/2026.02.06.704496" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Mohanty I., Xing S., Castillo V., Agongo J., Patan A., El Abiead Y. et al.</p>
+      <p class="pub-title">MS/MS Mass Spectrometry Filtering Tree for Bile Acid Regio- and Stereoisomer Annotation
+      </p>
+      <p class="pub-venue">
+        <em>Analytical Chemistry</em>, v.98, p. 4571–4584.
+        <a href="https://doi.org/10.1021/acs.analchem.5c05677" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+  </div>
+</div>
+<div class="pub-year-group">
+  <span class="pub-year">2025</span>
+  <div class="pub-list">
+    <div class="pub-entry article">
+      <p class="pub-authors">Patan A., Xing S., Charron-Lamoureux V., Hu Z., Deleray V., Agongo J. et al.</p>
+      <p class="pub-title">Charting the Undiscovered Metabolome with Synthetic Multiplexing
+      </p>
+      <p class="pub-venue">
+        <em></em>.
+        <a href="https://doi.org/10.1101/2025.11.18.689170" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Dorrestein P., Gouda H., Agongo J., Kelly P., Sala-Climent M., Nunes W.G. et al.</p>
+      <p class="pub-title">Learning molecular fingerprints of foods to decode dietary intake
+      </p>
+      <p class="pub-venue">
+        <em></em>.
+        <a href="https://doi.org/10.21203/rs.3.rs-7652253/v1" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Mannochio-Russo H., Gonçalves Nunes W.D., Zhao H.N., Kvitne K.E., Xing S., Gouda H. et al.</p>
+      <p class="pub-title">Bridging Complexity and Accessibility in Metabolomics with MetaboApps
+      </p>
+      <p class="pub-venue">
+        <em></em>.
+        <a href="https://doi.org/10.26434/chemrxiv-2025-3nq29" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Flores Ramos S., Siguenza N., Zhong W., Mohanty I., Lingaraju A., Richter R.A. et al.</p>
+      <p class="pub-title">Metatranscriptomics uncovers diurnal functional shifts in bacterial transgenes with profound metabolic effects
+      </p>
+      <p class="pub-venue">
+        <em>Cell Host &amp; Microbe</em>, v.33, p. 1057–1072.e5.
+        <a href="https://doi.org/10.1016/j.chom.2025.05.024" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Mannochio-Russo H., Charron-Lamoureux V., van Faassen M., Lamichhane S., Gonçalves Nunes W.D., Deleray V. et al.</p>
+      <p class="pub-title">The microbiome diversifies long- to short-chain fatty acid-derived N-acyl lipids
+      </p>
+      <p class="pub-venue">
+        <em>Cell</em>, v.188, p. 4154–4169.e19.
+        <a href="https://doi.org/10.1016/j.cell.2025.05.015" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Mannochio-Russo H., Delolo F.G., Silva R.C.F., da Silva F.L.F., Moreira E.A., Nascimento V. et al.</p>
+      <p class="pub-title">PERFIL DOS JOVENS DOUTORES EM QUÍMICA NO BRASIL: DESAFIOS, DISPARIDADES E PERSPECTIVAS
+      </p>
+      <p class="pub-venue">
+        <em>Química Nova</em>.
+        <a href="https://doi.org/10.21577/0100-4042.20250148" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+  </div>
+</div>
+<div class="pub-year-group">
+  <span class="pub-year">2023</span>
+  <div class="pub-list">
+    <div class="pub-entry article">
+      <p class="pub-authors">Mannochio-Russo H., Nunes W.D.G., Almeida R.F., Albernaz L.C., Espindola L.S., Bolzani V.S.</p>
+      <p class="pub-title">Old Meets New: Mass Spectrometry-Based Untargeted Metabolomics Reveals Unusual Larvicidal Nitropropanoyl Glycosides from the Leaves of Heteropterys umbellata
+      </p>
+      <p class="pub-venue">
+        <em>Journal of Natural Products</em>, v.86, p. 621–632.
+        <a href="https://doi.org/10.1021/acs.jnatprod.2c00788" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+  </div>
+</div>
+<div class="pub-year-group">
+  <span class="pub-year">2022</span>
+  <div class="pub-list">
+    <div class="pub-entry article">
+      <p class="pub-authors">Mannochio-Russo H., de Almeida R.F., Nunes W.D.G., Bueno P.C.P., Caraballo-Rodríguez A.M., Bauermeister A. et al.</p>
+      <p class="pub-title">Untargeted Metabolomics Sheds Light on the Diversity of Major Classes of Secondary Metabolites in the Malpighiaceae Botanical Family
+      </p>
+      <p class="pub-venue">
+        <em>Frontiers in Plant Science</em>, v.13.
+        <a href="https://doi.org/10.3389/fpls.2022.854842" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Silva D.H.S., Mannochio-Russo H., Lago J.H.G., Bueno P.C.P., Medina R.P., Bolzani V.d.S. et al.</p>
+      <p class="pub-title">Bioprospecting as a strategy for conservation and sustainable use of the Brazilian Flora
+      </p>
+      <p class="pub-venue">
+        <em>Biota Neotropica</em>, v.22.
+        <a href="https://doi.org/10.1590/1676-0611-bn-2022-1356" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+  </div>
+</div>
+<div class="pub-year-group">
+  <span class="pub-year">2020</span>
+  <div class="pub-list">
+    <div class="pub-entry article">
+      <p class="pub-authors">Gonçalves Nunes W.D., Mannochio Russo H., da Silva Bolzani V., Caires F.J.</p>
+      <p class="pub-title">Thermal characterization and compounds identification of commercial Stevia rebaudiana Bertoni sweeteners and thermal degradation products at high temperatures by TG–DSC, IR and LC–MS/MS
+      </p>
+      <p class="pub-venue">
+        <em>Journal of Thermal Analysis and Calorimetry</em>, v.146, p. 1149–1155.
+        <a href="https://doi.org/10.1007/s10973-020-10104-3" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+  </div>
+</div>
+<div class="pub-year-group">
+  <span class="pub-year">2019</span>
+  <div class="pub-list">
+    <div class="pub-entry article">
+      <p class="pub-authors">Zangaro G.A., Carvalho A.C., Ekawa B., do Nascimento A.L., Nunes W.D., Fernandes R.P. et al.</p>
+      <p class="pub-title">Study of the thermal behavior in oxidative and pyrolysis conditions of some transition metals complexes with Lornoxicam as ligand using the techniques: TG-DSC, DSC, HSM and EGA (TG-FTIR and HSM-MS)
+      </p>
+      <p class="pub-venue">
+        <em>Thermochimica Acta</em>, v.681, p. 178399.
+        <a href="https://doi.org/10.1016/j.tca.2019.178399" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Nunes W.D.G., Teixeira J.A., do Nascimento A.L.C.S., Ekawa B., Ionashiro M., Caires F.J.</p>
+      <p class="pub-title">Thermal analysis (TG–DSC, DSC–microscopy and EGA) and characterization of heavy trivalent lanthanides and yttrium isonicotinates
+      </p>
+      <p class="pub-venue">
+        <em>Journal of Thermal Analysis and Calorimetry</em>, v.138, p. 309–319.
+        <a href="https://doi.org/10.1007/s10973-019-08112-z" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+  </div>
+</div>
+<div class="pub-year-group">
+  <span class="pub-year">2018</span>
+  <div class="pub-list">
+    <div class="pub-entry article">
+      <p class="pub-authors">Nascimento A., Parkes G., Ashton G., Fernandes R., Teixeira J., Nunes W. et al.</p>
+      <p class="pub-title">Thermal analysis in oxidative and pyrolysis conditions of alkaline earth metals picolinates using the techniques: TG-DSC, DSC, MWTA, HSM and EGA (TG-DSC-FTIR and HSM-MS)
+      </p>
+      <p class="pub-venue">
+        <em>Journal of Analytical and Applied Pyrolysis</em>, v.135, p. 67–75.
+        <a href="https://doi.org/10.1016/j.jaap.2018.09.018" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Ekawa B., Nunes W.D.G., Teixeira J.A., Cebim M.A., Ionashiro E.Y., Junior Caires F.</p>
+      <p class="pub-title">New complexes of light lanthanides with the valsartan in the solid state: Thermal and spectroscopic studies
+      </p>
+      <p class="pub-venue">
+        <em>Journal of Analytical and Applied Pyrolysis</em>, v.135, p. 299–309.
+        <a href="https://doi.org/10.1016/j.jaap.2018.08.023" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Nunes W.D.G., Teixeira J.A., Ekawa B., do Nascimento A.L.C.S., Ionashiro M., Caires F.J.</p>
+      <p class="pub-title">Mn(II), Fe(II), Co(II), Ni(II), Cu(II) and Zn(II) transition metals isonicotinate complexes: Thermal behavior in N2 and air atmospheres and spectroscopic characterization
+      </p>
+      <p class="pub-venue">
+        <em>Thermochimica Acta</em>, v.666, p. 156–165.
+        <a href="https://doi.org/10.1016/j.tca.2018.06.010" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Costa B.A., Nunes W.D.G., Bembo L.H., Siqueira A.B., Caires F., Leles M.I.G. et al.</p>
+      <p class="pub-title">Study of thermoanalytical behavior of heavier lanthanides terephthalates in air atmosphere
+      </p>
+      <p class="pub-venue">
+        <em>Journal of Thermal Analysis and Calorimetry</em>, v.134, p. 1205–1210.
+        <a href="https://doi.org/10.1007/s10973-018-7373-x" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Nunes W.D.G., do Nascimento A.L.C.S., Moura A., Gaglieri C., Vallim G.B., Nascimento L.C. et al.</p>
+      <p class="pub-title">Thermal, spectroscopic and antimicrobial activity characterization of some norfloxacin complexes
+      </p>
+      <p class="pub-venue">
+        <em>Journal of Thermal Analysis and Calorimetry</em>, v.132, p. 1077–1088.
+        <a href="https://doi.org/10.1007/s10973-018-7019-z" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Russo H.M., Nunes W.D.G., da Silva Bolzani V., Ionashiro M., Caires F.J.</p>
+      <p class="pub-title">Thermoanalytical and spectroscopic characteristics of young and old leaves powder and methanolic extracts of Niedenzuella multiglandulosa
+      </p>
+      <p class="pub-venue">
+        <em>Journal of Thermal Analysis and Calorimetry</em>, v.132, p. 771–776.
+        <a href="https://doi.org/10.1007/s10973-017-6951-7" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+  </div>
+</div>
+<div class="pub-year-group">
+  <span class="pub-year">2017</span>
+  <div class="pub-list">
+    <div class="pub-entry article">
+      <p class="pub-authors">Silva R.d.C.d., Teixeira J.A., Nunes W.D.G., Zangaro G.A.C., Pivatto M., Caires F.J. et al.</p>
+      <p class="pub-title">Resveratrol: A thermoanalytical study
+      </p>
+      <p class="pub-venue">
+        <em>Food Chemistry</em>, v.237, p. 561–565.
+        <a href="https://doi.org/10.1016/j.foodchem.2017.05.146" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Teixeira J., Nunes W., Fernandes R., do Nascimento A., Caires F., Ionashiro M.</p>
+      <p class="pub-title">Thermal behavior in oxidative and pyrolysis conditions and characterization of some metal p-aminobenzoate compounds using TG–DTA, EGA and DSC-photovisual system
+      </p>
+      <p class="pub-venue">
+        <em>Journal of Analytical and Applied Pyrolysis</em>, v.128, p. 261–267.
+        <a href="https://doi.org/10.1016/j.jaap.2017.10.002" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors"></p>
+      <p class="pub-title">
+      </p>
+      <p class="pub-venue">
+        <em>VIII Simpósio de Análise Térmica - Ponta Grossa/PR</em>, v.8.
+        <a href="https://doi.org/10.18362/siat.v8.y2017" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Caires F.J., Nunes W.D.G., Gaglieri C., Nascimento A.L.C.S.d., Teixeira J.A., Zangaro G.A.C. et al.</p>
+      <p class="pub-title">Thermoanalytical, Spectroscopic and DFT Studies of Heavy Trivalent Lanthanides and Yttrium(III) with Oxamate as Ligand
+      </p>
+      <p class="pub-venue">
+        <em>Materials Research</em>, v.20, p. 937–944.
+        <a href="https://doi.org/10.1590/1980-5373-mr-2016-0633" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">R. Silva F.P., Viana B.F., Santos J.P., Nunes W.D., Teixeira J.A., Ionashiro E.Y.</p>
+      <p class="pub-title">SÍNTESE, CARACTERIZAÇÃO E ESTUDO TERMOANALÍTICO DOS ISOFTALATOS DE Mg (II), Ca (II), Sr (II), Ba (II)
+      </p>
+      <p class="pub-venue">
+        <em>Brazilian Journal of Thermal Analysis</em>, v.6, p. 19–27.
+        <a href="https://doi.org/10.18362/bjta.v6.i2.14" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">do Nascimento A.L.C.S., Teixeira J.A., Nunes W.D.G., Gomes D.J.C., Gaglieri C., Treu-Filho O. et al.</p>
+      <p class="pub-title">Thermal behavior of glycolic acid, sodium glycolate and its compounds with some bivalent transition metal ions in the solid state
+      </p>
+      <p class="pub-venue">
+        <em>Journal of Thermal Analysis and Calorimetry</em>, v.130, p. 1463–1472.
+        <a href="https://doi.org/10.1007/s10973-017-6161-3" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+  </div>
+</div>
+<div class="pub-year-group">
+  <span class="pub-year">2016</span>
+  <div class="pub-list">
+    <div class="pub-entry article">
+      <p class="pub-authors">Teixeira J., Nunes W., do Nascimento A., Colman T., Caires F., Gálico D. et al.</p>
+      <p class="pub-title">Synthesis, thermoanalytical, spectroscopic study and pyrolysis of solid rare earth complexes (Eu, Gd, Tb and Dy) with p-aminobenzoic acid
+      </p>
+      <p class="pub-venue">
+        <em>Journal of Analytical and Applied Pyrolysis</em>, v.121, p. 267–274.
+        <a href="https://doi.org/10.1016/j.jaap.2016.08.006" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">do Nascimento A., Teixeira J., Nunes W., Campos F., Treu-Filho O., Caires F. et al.</p>
+      <p class="pub-title">Thermal behavior, spectroscopic study and evolved gas analysis (EGA) during pyrolysis of picolinic acid, sodium picolinate and its light trivalent lanthanide complexes in solid state
+      </p>
+      <p class="pub-venue">
+        <em>Journal of Analytical and Applied Pyrolysis</em>, v.119, p. 242–250.
+        <a href="https://doi.org/10.1016/j.jaap.2016.01.010" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Nunes W.D.G., Teixeira J.A., do Nascimento A.L.C.S., Caires F.J., Ionashiro E.Y., Ionashiro M.</p>
+      <p class="pub-title">A comparative study on thermal behavior of solid-state light trivalent lanthanide isonicotinates in dynamic dry air and nitrogen atmospheres
+      </p>
+      <p class="pub-venue">
+        <em>Journal of Thermal Analysis and Calorimetry</em>, v.125, p. 397–405.
+        <a href="https://doi.org/10.1007/s10973-016-5339-4" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+    <div class="pub-entry article">
+      <p class="pub-authors">Teixeira J., Nunes W., Colman T., do Nascimento A., Caires F., Campos F. et al.</p>
+      <p class="pub-title">Thermal and spectroscopic study to investigate p-aminobenzoic acid, sodium p-aminobenzoate and its compounds with some lighter trivalent lanthanides
+      </p>
+      <p class="pub-venue">
+        <em>Thermochimica Acta</em>, v.624, p. 59–68.
+        <a href="https://doi.org/10.1016/j.tca.2015.11.023" target="_blank" rel="noopener">DOI ↗</a>
+      </p>
+    </div>
+  </div>
+</div>
+<!-- PUB_END -->
+  </section>
+
+  <!-- ── Education ── -->
+  <section id="education">
+    <p class="section-label">Education</p>
+
+    <div class="edu-row">
+      <div>
+        <h3>Doctor of Philosophy in Chemistry</h3>
+        <p class="inst">Institute of Chemistry, São Paulo State University — UNESP · Araraquara, SP, Brazil</p>
+        <p class="inst">Advisors: Dr. Flavio J. Caires &amp; Dr. Massao Ionashiro</p>
+      </div>
+      <span class="year">2018 – 2022</span>
+    </div>
+
+    <div class="edu-row">
+      <div>
+        <h3>Master's in Chemistry</h3>
+        <p class="inst">Institute of Chemistry, Federal University of Goiás — UFG · Goiânia, GO, Brazil</p>
+        <p class="inst">Advisor: Dr. Elias Y. Ionashiro</p>
+      </div>
+      <span class="year">2013 – 2015</span>
+    </div>
+
+    <div class="edu-row">
+      <div>
+        <h3>Licentiate Degree in Chemistry</h3>
+        <p class="inst">Federal University of Mato Grosso — UFMT · Pontal do Araguaia, MT, Brazil</p>
+        <p class="inst">Advisor: Dr. George Barbosa da Silva</p>
+      </div>
+      <span class="year">2009 – 2013</span>
+    </div>
+  </section>
+
+  <footer>
+    <span>© 2025 Wilhan D. G. Nunes</span>
+    <span>University of California, San Diego · <a href="mailto:wdgnsl@gmail.com">wdgnsl@gmail.com</a></span>
+  </footer>
+
+</div>
 </body>
 </html>
