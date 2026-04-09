@@ -118,9 +118,11 @@ def parse_bibs(folder: str = "publications") -> list[dict]:
             db = bibtexparser.load(f, parser=parser)
         for e in db.entries:
             entry_type = e.get("ENTRYTYPE", "article").lower()
-            preprint_servers = {"chemrxiv", "biorxiv", "medrxiv", "research square", "arxiv"}
+            preprint_servers = {"chemrxiv", "biorxiv", "medrxiv", "research square", "arxiv", "openrxiv"}
             journal = e.get("journal", "").lower()
-            pub_type = "preprint" if any(s in journal for s in preprint_servers) else "article"
+            publisher = e.get("publisher", "").lower()
+            preprint_source = f"{journal} {publisher}"
+            pub_type = "preprint" if any(s in preprint_source for s in preprint_servers) else "article"
             # pub_type = "preprint" if entry_type == "preprint" else "article"
             entries.append({
                 "type":    pub_type,
