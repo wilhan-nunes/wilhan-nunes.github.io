@@ -83,6 +83,34 @@
       font-weight: 300;
     }
 
+    .hd-profiles {
+      margin-top: 0.7rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 0.9rem;
+    }
+
+    .hd-profiles .profile-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.76rem;
+      color: var(--muted);
+      border-bottom: 1px solid var(--line);
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .hd-profiles .profile-link:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      text-decoration: none;
+    }
+
+    .hd-profiles .profile-link img {
+      width: 1em;
+      height: 1em;
+    }
+
     .hd-contact {
       display: flex;
       flex-direction: column;
@@ -378,6 +406,39 @@
         <h1>Wilhan <em>Nunes</em></h1>
         <p class="degree">Ph.D. in Chemistry</p>
         <p class="title-role">Research Staff Associate II · Computational Metabolomics</p>
+        <div class="hd-profiles">
+          <a
+            id="cy-effective-orcid-url"
+            class="profile-link"
+            href="https://orcid.org/0000-0002-0609-6678"
+            target="_blank"
+            rel="me noopener noreferrer"
+          >
+            <img
+              src="assets/orcid-16x16.png"
+              alt="ORCID iD icon"
+            />
+            ORCID
+          </a>
+          <a
+            class="profile-link"
+            href="https://scholar.google.com/citations?user=4cPVoeIAAAAJ&amp;hl=en"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img src="assets/google-scholar.svg" alt="Google Scholar icon" />
+            Google Scholar
+          </a>
+          <a
+            class="profile-link"
+            href="https://www.linkedin.com/in/wilhan-nunes/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img src="assets/linkedin.svg" alt="LinkedIn icon" />
+            LinkedIn
+          </a>
+        </div>
       </div>
       <div class="hd-contact">
         <a href="mailto:wdgnsl@gmail.com">wdgnsl@gmail.com</a>
