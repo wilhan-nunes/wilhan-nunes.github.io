@@ -3,17 +3,14 @@ name: Build & Deploy CV
 on:
   push:
     branches: [main]
-    paths:
-      - "publications/**.bib"   # rebuild whenever a .bib file changes
-      - "index.html"
-      - "build_publications.py"
   workflow_dispatch:            # allow manual trigger from GitHub UI
 
 permissions:
-  contents: write               # needed to commit the updated index.html
+  contents: write               # needed to commit regenerated static files
 
 jobs:
   build:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
 
     steps:
@@ -26,15 +23,20 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install bibtexparser jinja2
+        run: |
+          pip install bibtexparser jinja2 playwright
+          python -m playwright install --with-deps chromium
 
       - name: Build publications
         run: python build_publications.py
 
-      - name: Commit updated index.html
+      - name: Build PDF
+        run: python build_pdf.py
+
+      - name: Commit updated generated files
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html _publications.html
-          git diff --cached --quiet || git commit -m "chore: rebuild publications [skip ci]"
+          git add index.html _publications.html Wilhan_Nunes_CV.pdf
+          git diff --cached --quiet || git commit -m "chore: rebuild publications and pdf [skip ci]"
           git push
