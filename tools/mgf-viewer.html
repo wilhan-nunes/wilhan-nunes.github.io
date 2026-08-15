@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MGF Spectrum Viewer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #f9f8f5;
+    --ink:     #18181a;
+    --muted:   #6b6b72;
+    --accent:  #1e5fa8;
+    --accent2: #0f3d72;
+    --accent-b:#b5651d;
+    --line:    #e2e0d8;
+    --card:    #f0ede4;
+    --badge:   #dbeafe;
+    --badge-ink: #1e40af;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Consolas, monospace;
+    --font-head: Georgia, serif;
+  }
+
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 13px;
+    overflow: hidden;
+  }
+
+  button, input { font-family: inherit; font-size: inherit; color: inherit; }
+
+  .app {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    grid-template-rows: auto 1fr auto auto;
+    grid-template-areas:
+      "toolbar toolbar"
+      "sidebar canvas"
+      "sidebar meta"
+      "sidebar legend";
+    height: 100vh;
+    position: relative;
+  }
+
+  .app.drag-over::after {
+    content: "Drop .mgf file to load";
+    position: fixed;
+    inset: 0;
+    background: rgba(30, 95, 168, 0.12);
+    border: 3px dashed var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-head);
+    font-size: 1.6rem;
+    color: var(--accent2);
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    grid-area: toolbar;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--line);
+    background: var(--card);
+    flex-wrap: wrap;
+  }
+
+  h1.brand {
+    font-family: var(--font-head);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+  h1.brand em { font-style: italic; color: var(--accent); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .file-status {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .spacer { flex: 1; }
+
+  .topn-control, .mirror-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .topn-control input[type=range] { width: 100px; }
+  .topn-control span { color: var(--ink); min-width: 1.4em; display: inline-block; text-align: right; }
+
+  .progress-wrap {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+  .progress-bar {
+    width: 120px; height: 6px; border-radius: 3px;
+    background: var(--line);
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-bar::after {
+    content: "";
+    position: absolute; top:0; bottom:0; left:-40%;
+    width: 40%;
+    background: var(--accent);
+    animation: indet 1s linear infinite;
+    border-radius: 3px;
+  }
+  @keyframes indet { 0% { left:-40%; } 100% { left: 100%; } }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    grid-area: sidebar;
+    grid-row: 2 / span 3;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--line);
+    background: var(--bg);
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  #searchBox {
+    margin: 0.7rem 0.7rem 0.4rem;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fff;
+    font-size: 0.8rem;
+  }
+  #searchBox:focus { outline: none; border-color: var(--accent); }
+
+  #listCount {
+    padding: 0 0.8rem 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .list-viewport {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+    border-top: 1px solid var(--line);
+  }
+  .list-spacer { position: relative; }
+
+  .spec-row {
+    position: absolute;
+    left: 0; right: 0;
+    padding: 0.35rem 0.8rem;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    height: 46px;
+    overflow: hidden;
+  }
+  .spec-row:hover { background: var(--card); }
+  .spec-row.selected { background: var(--badge); }
+  .row-title {
+    font-size: 0.78rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .row-sub {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    color: var(--muted);
+    margin-top: 0.15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── B-picker (mirror mode) ── */
+  .b-picker {
+    display: none;
+    flex-direction: column;
+    border-top: 1px solid var(--line);
+    padding: 0.6rem 0.7rem;
+    background: var(--card);
+    position: relative;
+  }
+  .b-picker input {
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 0.76rem;
+  }
+  .b-results {
+    max-height: 160px;
+    overflow-y: auto;
+    margin-top: 0.3rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fff;
+  }
+  .b-results:empty { display: none; border: none; }
+  .b-result-row {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.72rem;
+    cursor: pointer;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .b-result-row:last-child { border-bottom: none; }
+  .b-result-row:hover { background: var(--badge); }
+  .b-selected {
+    margin-top: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--accent-b);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Canvas ── */
+  .canvas-wrap {
+    grid-area: canvas;
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+  }
+  #spectrumCanvas { display: block; cursor: default; }
+
+  .tooltip {
+    position: absolute;
+    display: none;
+    pointer-events: none;
+    background: var(--ink);
+    color: #fff;
+    padding: 0.35rem 0.55rem;
+    border-radius: 5px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    line-height: 1.4;
+    white-space: nowrap;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
+
+  /* ── Metadata strip ── */
+  .meta-strip {
+    grid-area: meta;
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    border-top: 1px solid var(--line);
+    background: var(--card);
+    max-height: 34vh;
+    overflow-y: auto;
+  }
+  .meta-empty { color: var(--muted); font-size: 0.78rem; }
+  .meta-col { flex: 1; min-width: 0; }
+  .meta-title {
+    font-family: var(--font-head);
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--ink);
+    margin-bottom: 0.3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .meta-headline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    font-size: 0.74rem;
+    align-items: center;
+  }
+  .meta-headline b { color: var(--muted); font-weight: 500; margin-right: 0.2em; }
+  .meta-tag {
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+  }
+  details { margin-top: 0.4rem; }
+  summary {
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .meta-fields { margin-top: 0.3rem; }
+  .meta-field-row {
+    display: flex;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    padding: 0.12rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .mfk { color: var(--muted); min-width: 120px; }
+  .mfv { color: var(--ink); word-break: break-all; }
+
+  /* ── Legend ── */
+  .legend {
+    grid-area: legend;
+    padding: 0.35rem 1rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  @media (max-width: 900px) {
+    .app {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 200px 1fr auto auto;
+      grid-template-areas:
+        "toolbar"
+        "sidebar"
+        "canvas"
+        "meta"
+        "legend";
+    }
+    .sidebar { grid-row: auto; border-right: none; border-bottom: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="toolbar">
+    <h1 class="brand">MGF <em>Viewer</em></h1>
+    <label class="btn file-btn">
+      Load File
+      <input type="file" id="fileInput" accept=".mgf,.txt" hidden>
+    </label>
+    <span class="file-status" id="fileStatus">No file loaded — drop an .mgf file anywhere on this page</span>
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar"></div>
+      <span id="progressText"></span>
+    </div>
+    <div class="spacer"></div>
+    <label class="topn-control">Top N <input type="range" id="topN" min="0" max="30" value="6"><span id="topNVal">6</span></label>
+    <label class="mirror-toggle"><input type="checkbox" id="mirrorToggle"> Mirror mode</label>
+    <button class="btn" id="resetZoomBtn">Reset Zoom</button>
+  </div>
+
+  <div class="sidebar">
+    <input type="text" id="searchBox" placeholder="Filter by title, scan #, m/z, charge…">
+    <div id="listCount">No spectra loaded</div>
+    <div class="list-viewport" id="listViewport">
+      <div class="list-spacer" id="listSpacer"></div>
+    </div>
+    <div class="b-picker" id="bPicker">
+      <input type="text" id="bSearch" placeholder="Search spectrum B…">
+      <div class="b-results" id="bResults"></div>
+      <div class="b-selected" id="bSelectedLabel">No spectrum B selected</div>
+    </div>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="spectrumCanvas"></canvas>
+    <div class="tooltip" id="tooltip"></div>
+  </div>
+
+  <div class="meta-strip" id="metaStrip"><div class="meta-empty">No spectrum loaded.</div></div>
+
+  <div class="legend">drag = pan &middot; shift+drag = box-zoom &middot; scroll = zoom m/z &middot; shift+scroll = zoom intensity &middot; click peak = toggle label &middot; double-click = reset zoom</div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const MONO_FONT = 'ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Consolas, monospace';
+  const COLORS = {
+    accent: '#1e5fa8',
+    accentB: '#b5651d',
+    ink: '#18181a',
+    muted: '#6b6b72',
+    line: '#e2e0d8',
+    card: '#f0ede4',
+    bg: '#f9f8f5'
+  };
+  const ROW_HEIGHT = 46;
+  const CHUNK_BYTE_THRESHOLD = 15 * 1024 * 1024;
+  const PARSE_BATCH_SIZE = 250;
+
+  // ── App state ──
+  const App = {
+    spectra: [],
+    filteredIndices: [],
+    currentIndex: -1,
+    mirrorIndex: -1,
+    mirrorEnabled: false,
+    labelToggles: new Map(), // spectrumIndex -> Set(peakIndex)
+    topN: 6,
+    hover: null,             // {spectrum, peakIndex, sign}
+    drag: null,              // {mode:'pan'|'box', startX, startY, curX, curY, startVp, moved}
+    viewport: { mzMin: 0, mzMax: 1000, intMin: 0, intMax: 108 }
+  };
+
+  function getA() { return App.currentIndex >= 0 ? App.spectra[App.currentIndex] : null; }
+  function getB() { return (App.mirrorEnabled && App.mirrorIndex >= 0) ? App.spectra[App.mirrorIndex] : null; }
+
+  // ── DOM refs ──
+  const appEl = document.getElementById('app');
+  const canvas = document.getElementById('spectrumCanvas');
+  const ctx = canvas.getContext('2d');
+  const tooltipEl = document.getElementById('tooltip');
+  const fileInput = document.getElementById('fileInput');
+  const fileStatus = document.getElementById('fileStatus');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressText = document.getElementById('progressText');
+  const searchBox = document.getElementById('searchBox');
+  const listCountEl = document.getElementById('listCount');
+  const listViewport = document.getElementById('listViewport');
+  const listSpacer = document.getElementById('listSpacer');
+  const metaStrip = document.getElementById('metaStrip');
+  const topNInput = document.getElementById('topN');
+  const topNVal = document.getElementById('topNVal');
+  const mirrorToggle = document.getElementById('mirrorToggle');
+  const bPicker = document.getElementById('bPicker');
+  const bSearch = document.getElementById('bSearch');
+  const bResults = document.getElementById('bResults');
+  const bSelectedLabel = document.getElementById('bSelectedLabel');
+  const resetZoomBtn = document.getElementById('resetZoomBtn');
+
+  // ── Small utils ──
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function lowerBound(arr, target) {
+    let lo = 0, hi = arr.length;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (arr[mid] < target) lo = mid + 1; else hi = mid; }
+    return lo;
+  }
+  function upperBound(arr, target) {
+    let lo = 0, hi = arr.length;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (arr[mid] <= target) lo = mid + 1; else hi = mid; }
+    return lo;
+  }
+  function niceStep(rawStep) {
+    if (rawStep <= 0) return 1;
+    const exp = Math.floor(Math.log10(rawStep));
+    const base = rawStep / Math.pow(10, exp);
+    let niceBase;
+    if (base < 1.5) niceBase = 1; else if (base < 3) niceBase = 2; else if (base < 7) niceBase = 5; else niceBase = 10;
+    return niceBase * Math.pow(10, exp);
+  }
+  function computeTicks(min, max, targetCount) {
+    const span = max - min;
+    if (!(span > 0)) return [min];
+    const step = niceStep(span / targetCount);
+    const start = Math.ceil(min / step) * step;
+    const ticks = [];
+    for (let t = start; t <= max + step * 1e-6; t += step) ticks.push(Math.abs(t) < step * 1e-9 ? 0 : t);
+    return ticks;
+  }
+  function tickDecimals(ticks) {
+    if (ticks.length < 2) return 2;
+    const step = Math.abs(ticks[1] - ticks[0]);
+    if (step < 0.01) return 4;
+    if (step < 0.1) return 3;
+    if (step < 1) return 2;
+    if (step < 10) return 1;
+    return 0;
+  }
+  function relIntensityOf(spectrum, idx) {
+    return spectrum.intensity[idx] / spectrum.maxIntensity * 100;
+  }
+
+  // ── MGF parsing ──
+  function parsePepmass(str) {
+    if (!str) return [null, null];
+    const parts = str.trim().split(/\s+/);
+    const mz = parseFloat(parts[0]);
+    const inten = parts.length > 1 ? parseFloat(parts[1]) : null;
+    return [Number.isFinite(mz) ? mz : null, Number.isFinite(inten) ? inten : null];
+  }
+  function parseChargeNum(str) {
+    if (!str) return null;
+    const m = /^(\d+)\s*([+-]?)/.exec(str.trim());
+    if (!m) return null;
+    const n = parseInt(m[1], 10);
+    return m[2] === '-' ? -n : n;
+  }
+
+  function finalizeSpectrum(building, mzArr, intArr, index) {
+    const n = mzArr.length;
+    const order = new Array(n);
+    for (let i = 0; i < n; i++) order[i] = i;
+    order.sort((a, b) => mzArr[a] - mzArr[b]);
+    const mz = new Float64Array(n), intensity = new Float64Array(n);
+    for (let i = 0; i < n; i++) { mz[i] = mzArr[order[i]]; intensity[i] = intArr[order[i]]; }
+    let maxIntensity = 0;
+    for (let i = 0; i < n; i++) if (intensity[i] > maxIntensity) maxIntensity = intensity[i];
+    if (maxIntensity <= 0) maxIntensity = 1;
+    const intIdx = new Array(n);
+    for (let i = 0; i < n; i++) intIdx[i] = i;
+    intIdx.sort((a, b) => intensity[b] - intensity[a]);
+    const peakOrderByIntensityDesc = new Uint32Array(n);
+    for (let i = 0; i < n; i++) peakOrderByIntensityDesc[i] = intIdx[i];
+
+    const headers = building.headers;
+    const title = headers.get('TITLE') || '';
+    const scans = headers.get('SCANS') || '';
+    const chargeRaw = headers.get('CHARGE') || '';
+    const chargeNum = parseChargeNum(chargeRaw);
+    const pepmassRaw = headers.get('PEPMASS') || '';
+    const [pepmassMz, pepmassIntensity] = parsePepmass(pepmassRaw);
+    const rtInSeconds = headers.has('RTINSECONDS') ? parseFloat(headers.get('RTINSECONDS')) : null;
+    const searchText = [title, scans, chargeRaw, pepmassRaw].join(' ').toLowerCase();
+
+    return {
+      index, scans, title, pepmassMz, pepmassIntensity, charge: chargeRaw, chargeNum, rtInSeconds,
+      headers, mz, intensity, maxIntensity, peakOrderByIntensityDesc,
+      peakCount: n, _searchText: searchText
+    };
+  }
+
+  function* parseMgfLines(text, stats) {
+    const lines = text.split(/\r\n|\r|\n/);
+    let building = null, mzTemp = null, intTemp = null, index = 0;
+    for (let li = 0; li < lines.length; li++) {
+      const line = lines[li].trim();
+      if (!line) continue;
+      if (line === 'BEGIN IONS') { building = { headers: new Map() }; mzTemp = []; intTemp = []; continue; }
+      if (line === 'END IONS') {
+        if (building) { yield finalizeSpectrum(building, mzTemp, intTemp, index); index++; }
+        building = null; continue;
+      }
+      if (!building) { stats.skipped++; continue; }
+      const eq = line.indexOf('=');
+      if (eq > 0) {
+        building.headers.set(line.slice(0, eq).trim().toUpperCase(), line.slice(eq + 1).trim());
+        continue;
+      }
+      const parts = line.split(/\s+/);
+      const mz = parseFloat(parts[0]);
+      if (!Number.isFinite(mz)) { stats.skipped++; continue; }
+      const inten = parts.length > 1 ? parseFloat(parts[1]) : 0;
+      mzTemp.push(mz);
+      intTemp.push(Number.isFinite(inten) ? inten : 0);
+    }
+  }
+
+  // ── File loading ──
+  function resetAppStateForNewFile() {
+    App.spectra = []; App.filteredIndices = []; App.currentIndex = -1; App.mirrorIndex = -1;
+    App.mirrorEnabled = false; mirrorToggle.checked = false; bPicker.style.display = 'none';
+    App.labelToggles = new Map(); App.hover = null; App.drag = null;
+    searchBox.value = ''; bSearch.value = ''; bResults.innerHTML = '';
+    bSelectedLabel.textContent = 'No spectrum B selected';
+  }
+
+  function showProgress(show) { progressWrap.style.display = show ? 'flex' : 'none'; }
+  function updateProgressText(count) { progressText.textContent = 'Parsing… ' + count + ' spectra so far'; }
+
+  function finishLoad(stats, fileName) {
+    App.filteredIndices = App.spectra.map(s => s.index);
+    listCountEl.textContent = 'Showing ' + App.filteredIndices.length + ' of ' + App.spectra.length + ' spectra';
+    fileStatus.textContent = fileName + ' — ' + App.spectra.length + ' spectra' + (stats.skipped ? (' · ' + stats.skipped + ' lines skipped') : '');
+    renderList();
+    if (App.spectra.length > 0) selectSpectrum(0);
+    else { renderMetadata(); render(); }
+  }
+
+  function ingestText(text, byteSize, fileName) {
+    resetAppStateForNewFile();
+    const stats = { skipped: 0 };
+    const gen = parseMgfLines(text, stats);
+    if (byteSize < CHUNK_BYTE_THRESHOLD) {
+      let r;
+      while (!(r = gen.next()).done) App.spectra.push(r.value);
+      finishLoad(stats, fileName);
+    } else {
+      showProgress(true);
+      const step = () => {
+        let count = 0, done = false;
+        while (count < PARSE_BATCH_SIZE) {
+          const r = gen.next();
+          if (r.done) { done = true; break; }
+          App.spectra.push(r.value);
+          count++;
+        }
+        updateProgressText(App.spectra.length);
+        if (done) { showProgress(false); finishLoad(stats, fileName); }
+        else setTimeout(step, 0);
+      };
+      step();
+    }
+  }
+
+  function loadFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => ingestText(e.target.result, file.size, file.name);
+    reader.onerror = () => { fileStatus.textContent = 'Failed to read file: ' + file.name; };
+    reader.readAsText(file);
+  }
+
+  fileInput.addEventListener('change', (e) => { const f = e.target.files[0]; if (f) loadFile(f); });
+  appEl.addEventListener('dragover', (e) => { e.preventDefault(); appEl.classList.add('drag-over'); });
+  appEl.addEventListener('dragleave', (e) => { if (e.target === appEl) appEl.classList.remove('drag-over'); });
+  appEl.addEventListener('drop', (e) => {
+    e.preventDefault(); appEl.classList.remove('drag-over');
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) loadFile(f);
+  });
+
+  // ── Sidebar list (virtualized + search) ──
+  let searchDebounce = null;
+  searchBox.addEventListener('input', () => { clearTimeout(searchDebounce); searchDebounce = setTimeout(applyFilter, 120); });
+
+  function applyFilter() {
+    const q = searchBox.value.trim().toLowerCase();
+    App.filteredIndices = (!q ? App.spectra : App.spectra.filter(s => s._searchText.includes(q))).map(s => s.index);
+    listCountEl.textContent = 'Showing ' + App.filteredIndices.length + ' of ' + App.spectra.length + ' spectra';
+    renderList();
+  }
+
+  function renderList() {
+    listSpacer.style.height = (App.filteredIndices.length * ROW_HEIGHT) + 'px';
+    const scrollTop = listViewport.scrollTop;
+    const viewH = listViewport.clientHeight || 400;
+    const first = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - 4);
+    const last = Math.min(App.filteredIndices.length, Math.ceil((scrollTop + viewH) / ROW_HEIGHT) + 4);
+    const rows = listSpacer.querySelectorAll('.spec-row');
+    rows.forEach(r => r.remove());
+    const frag = document.createDocumentFragment();
+    for (let i = first; i < last; i++) {
+      const specIdx = App.filteredIndices[i];
+      const s = App.spectra[specIdx];
+      if (!s) continue;
+      const row = document.createElement('div');
+      row.className = 'spec-row' + (specIdx === App.currentIndex ? ' selected' : '');
+      row.style.top = (i * ROW_HEIGHT) + 'px';
+      const mzTxt = s.pepmassMz != null ? s.pepmassMz.toFixed(4) : '—';
+      row.innerHTML = '<div class="row-title">' + escapeHtml(s.title || '(no title)') + '</div>' +
+        '<div class="row-sub">#' + escapeHtml(s.scans || String(s.index)) + ' &middot; ' + mzTxt + ' m/z &middot; ' + escapeHtml(s.charge || '—') + '</div>';
+      row.addEventListener('click', () => selectSpectrum(specIdx));
+      frag.appendChild(row);
+    }
+    listSpacer.appendChild(frag);
+  }
+
+  let listRAF = null;
+  listViewport.addEventListener('scroll', () => {
+    if (listRAF) return;
+    listRAF = requestAnimationFrame(() => { listRAF = null; renderList(); });
+  });
+
+  function selectSpectrum(specIdx) {
+    App.currentIndex = specIdx;
+    resetViewport();
+    renderList();
+    renderMetadata();
+    render();
+  }
+
+  // ── Mirror mode / B picker ──
+  mirrorToggle.addEventListener('change', (e) => {
+    App.mirrorEnabled = e.target.checked;
+    bPicker.style.display = App.mirrorEnabled ? 'flex' : 'none';
+    resetViewport(); renderMetadata(); render();
+  });
+
+  let bDebounce = null;
+  bSearch.addEventListener('input', () => { clearTimeout(bDebounce); bDebounce = setTimeout(renderBResults, 120); });
+
+  function renderBResults() {
+    const q = bSearch.value.trim().toLowerCase();
+    let matches = App.spectra;
+    if (q) matches = matches.filter(s => s._searchText.includes(q));
+    bResults.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    matches.slice(0, 50).forEach(s => {
+      const item = document.createElement('div');
+      item.className = 'b-result-row';
+      item.textContent = '#' + (s.scans || s.index) + ' ' + (s.title || '');
+      item.addEventListener('click', () => {
+        App.mirrorIndex = s.index;
+        bSelectedLabel.textContent = 'B: #' + (s.scans || s.index) + ' ' + (s.title || '');
+        resetViewport(); renderMetadata(); render();
+        bResults.innerHTML = ''; bSearch.value = '';
+      });
+      frag.appendChild(item);
+    });
+    bResults.appendChild(frag);
+  }
+
+  // ── Metadata panel ──
+  function buildMetaColumn(s, label, color) {
+    const col = document.createElement('div');
+    col.className = 'meta-col';
+    const titleEl = document.createElement('div');
+    titleEl.className = 'meta-title';
+    titleEl.textContent = s.title || '(no title)';
+    col.appendChild(titleEl);
+
+    const headline = document.createElement('div');
+    headline.className = 'meta-headline';
+    const rtTxt = s.rtInSeconds != null && Number.isFinite(s.rtInSeconds) ? (s.rtInSeconds / 60).toFixed(2) + ' min' : '—';
+    const rangeTxt = s.peakCount ? s.mz[0].toFixed(2) + '–' + s.mz[s.peakCount - 1].toFixed(2) : '—';
+    headline.innerHTML =
+      '<span class="meta-tag" style="background:' + color + '">' + label + '</span>' +
+      '<span><b>Scan</b>' + escapeHtml(s.scans || String(s.index)) + '</span>' +
+      '<span><b>Precursor</b>' + (s.pepmassMz != null ? s.pepmassMz.toFixed(4) : '—') + ' m/z</span>' +
+      '<span><b>Charge</b>' + escapeHtml(s.charge || '—') + '</span>' +
+      '<span><b>RT</b>' + rtTxt + '</span>' +
+      '<span><b>Peaks</b>' + s.peakCount + '</span>' +
+      '<span><b>Range</b>' + rangeTxt + '</span>';
+    col.appendChild(headline);
+
+    const details = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.textContent = 'Show all fields';
+    details.appendChild(summary);
+    const fieldsList = document.createElement('div');
+    fieldsList.className = 'meta-fields';
+    s.headers.forEach((v, k) => {
+      const row = document.createElement('div');
+      row.className = 'meta-field-row';
+      row.innerHTML = '<span class="mfk">' + escapeHtml(k) + '</span><span class="mfv">' + escapeHtml(v) + '</span>';
+      fieldsList.appendChild(row);
+    });
+    details.appendChild(fieldsList);
+    col.appendChild(details);
+    return col;
+  }
+
+  function renderMetadata() {
+    metaStrip.innerHTML = '';
+    const a = getA();
+    if (!a) { metaStrip.innerHTML = '<div class="meta-empty">No spectrum loaded.</div>'; return; }
+    metaStrip.appendChild(buildMetaColumn(a, 'A', COLORS.accent));
+    const b = getB();
+    if (b) metaStrip.appendChild(buildMetaColumn(b, 'B', COLORS.accentB));
+  }
+
+  // ── Canvas sizing ──
+  let cssW = 0, cssH = 0, dpr = window.devicePixelRatio || 1;
+  let marginLeft = 56, marginRight = 20, marginTop = 16, marginBottom = 36;
+  let plotW = 10, plotH = 10;
+
+  function resizeCanvas() {
+    const wrap = canvas.parentElement;
+    cssW = wrap.clientWidth; cssH = wrap.clientHeight;
+    dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    canvas.style.width = cssW + 'px';
+    canvas.style.height = cssH + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function computeMargins() {
+    plotW = Math.max(10, cssW - marginLeft - marginRight);
+    plotH = Math.max(10, cssH - marginTop - marginBottom);
+  }
+
+  new ResizeObserver(() => { resizeCanvas(); render(); }).observe(canvas.parentElement);
+
+  // ── Coordinate transforms ──
+  function baselineY() {
+    return App.mirrorEnabled ? (marginTop + plotH / 2) : (marginTop + plotH);
+  }
+  function mzToPx(mz) {
+    const vp = App.viewport;
+    return marginLeft + (mz - vp.mzMin) / (vp.mzMax - vp.mzMin) * plotW;
+  }
+  function pxToMz(px) {
+    const vp = App.viewport;
+    return vp.mzMin + (px - marginLeft) / plotW * (vp.mzMax - vp.mzMin);
+  }
+  function relIntToPx(relInt, sign) {
+    const vp = App.viewport;
+    const half = App.mirrorEnabled ? plotH / 2 : plotH;
+    const frac = (relInt - vp.intMin) / (vp.intMax - vp.intMin);
+    return baselineY() - sign * frac * half;
+  }
+  function pxToRelInt(py, sign) {
+    const vp = App.viewport;
+    const half = App.mirrorEnabled ? plotH / 2 : plotH;
+    const frac = sign * (baselineY() - py) / half;
+    return vp.intMin + frac * (vp.intMax - vp.intMin);
+  }
+
+  // ── Viewport bounds/clamping ──
+  function computeFullBounds() {
+    let mzMin = Infinity, mzMax = -Infinity;
+    [getA(), getB()].forEach(s => {
+      if (s && s.peakCount) { mzMin = Math.min(mzMin, s.mz[0]); mzMax = Math.max(mzMax, s.mz[s.peakCount - 1]); }
+    });
+    if (!isFinite(mzMin)) { mzMin = 0; mzMax = 1000; }
+    const pad = (mzMax - mzMin) * 0.02 || 1;
+    return { mzMin: mzMin - pad, mzMax: mzMax + pad };
+  }
+
+  function resetViewport() {
+    const b = computeFullBounds();
+    App.viewport = { mzMin: b.mzMin, mzMax: b.mzMax, intMin: 0, intMax: 108 };
+  }
+
+  function clampViewport() {
+    const vp = App.viewport;
+    const bounds = computeFullBounds();
+    const fullSpan = Math.max(bounds.mzMax - bounds.mzMin, 1e-6);
+    const minSpan = Math.max(fullSpan / 2000, 0.0005);
+    if (vp.mzMax - vp.mzMin < minSpan) { const c = (vp.mzMax + vp.mzMin) / 2; vp.mzMin = c - minSpan / 2; vp.mzMax = c + minSpan / 2; }
+    const maxSpan = fullSpan * 6 + 10;
+    if (vp.mzMax - vp.mzMin > maxSpan) { const c = (vp.mzMax + vp.mzMin) / 2; vp.mzMin = c - maxSpan / 2; vp.mzMax = c + maxSpan / 2; }
+    if (vp.mzMax < bounds.mzMin) { const w = vp.mzMax - vp.mzMin; vp.mzMin = bounds.mzMin; vp.mzMax = bounds.mzMin + w; }
+    if (vp.mzMin > bounds.mzMax) { const w = vp.mzMax - vp.mzMin; vp.mzMax = bounds.mzMax; vp.mzMin = bounds.mzMax - w; }
+    if (vp.intMax - vp.intMin < 1) { const c = (vp.intMax + vp.intMin) / 2; vp.intMin = c - 0.5; vp.intMax = c + 0.5; }
+    if (vp.intMin < -20) vp.intMin = -20;
+    if (vp.intMax > 2000) vp.intMax = 2000;
+  }
+
+  // ── Rendering ──
+  function visiblePeakRange(spectrum) {
+    const vp = App.viewport;
+    const start = lowerBound(spectrum.mz, vp.mzMin);
+    const end = Math.min(spectrum.peakCount, upperBound(spectrum.mz, vp.mzMax));
+    return { start, end };
+  }
+
+  function drawSpectrumHalf(spectrum, sign, color) {
+    if (!spectrum) return;
+    const range = visiblePeakRange(spectrum);
+    const base = baselineY();
+    ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.globalAlpha = 0.9;
+    ctx.beginPath();
+    for (let i = range.start; i < range.end; i++) {
+      const x = mzToPx(spectrum.mz[i]);
+      const y = relIntToPx(relIntensityOf(spectrum, i), sign);
+      ctx.moveTo(x, base); ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    drawLabelsForHalf(spectrum, sign, color);
+  }
+
+  function drawLabelsForHalf(spectrum, sign, color) {
+    const vp = App.viewport;
+    const toggled = App.labelToggles.get(spectrum.index) || new Set();
+    const candidateSet = new Set();
+    const scanLimit = Math.min(spectrum.peakCount, 3000);
+    let collected = 0;
+    for (let i = 0; i < scanLimit && collected < App.topN; i++) {
+      const idx = spectrum.peakOrderByIntensityDesc[i];
+      if (spectrum.mz[idx] >= vp.mzMin && spectrum.mz[idx] <= vp.mzMax) { candidateSet.add(idx); collected++; }
+    }
+    toggled.forEach(idx => {
+      if (idx < spectrum.peakCount && spectrum.mz[idx] >= vp.mzMin && spectrum.mz[idx] <= vp.mzMax) candidateSet.add(idx);
+    });
+    if (candidateSet.size === 0) return;
+
+    const candidates = Array.from(candidateSet).map(idx => ({
+      idx,
+      x: mzToPx(spectrum.mz[idx]),
+      apexY: relIntToPx(relIntensityOf(spectrum, idx), sign),
+      intensity: spectrum.intensity[idx],
+      text: spectrum.mz[idx].toFixed(4)
+    }));
+    candidates.sort((a, b) => b.intensity - a.intensity);
+
+    ctx.font = '11px ' + MONO_FONT;
+    const MAX_ROWS = 4, ROW_H = 13, GAP = 4;
+    const rows = [];
+    for (const c of candidates) {
+      const w = ctx.measureText(c.text).width;
+      let placedRow = -1;
+      for (let r = 0; r < MAX_ROWS; r++) {
+        const interval = rows[r] || (rows[r] = []);
+        const x1 = c.x - w / 2 - GAP / 2, x2 = c.x + w / 2 + GAP / 2;
+        const collides = interval.some(([ix1, ix2]) => !(x2 < ix1 || x1 > ix2));
+        if (!collides) { interval.push([x1, x2]); placedRow = r; break; }
+      }
+      if (placedRow === -1) { placedRow = MAX_ROWS - 1; rows[placedRow].push([c.x - w / 2, c.x + w / 2]); }
+      const yOff = ROW_H * (placedRow + 1) + 4;
+      const labelY = c.apexY - sign * yOff;
+      if (placedRow > 0) {
+        ctx.strokeStyle = color; ctx.globalAlpha = 0.35; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(c.x, c.apexY - sign * 4); ctx.lineTo(c.x, labelY + sign * 8); ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+      ctx.fillStyle = color;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = sign > 0 ? 'bottom' : 'top';
+      ctx.fillText(c.text, c.x, labelY);
+    }
+  }
+
+  function drawAxesAndGrid() {
+    const vp = App.viewport;
+    ctx.save();
+    ctx.font = '10px ' + MONO_FONT;
+
+    const mzTicks = computeTicks(vp.mzMin, vp.mzMax, 8);
+    const mzDecimals = tickDecimals(mzTicks);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (const t of mzTicks) {
+      const x = mzToPx(t);
+      if (x < marginLeft - 1 || x > marginLeft + plotW + 1) continue;
+      ctx.strokeStyle = COLORS.line; ctx.beginPath(); ctx.moveTo(x, marginTop); ctx.lineTo(x, marginTop + plotH); ctx.stroke();
+      ctx.fillStyle = COLORS.muted;
+      ctx.fillText(t.toFixed(mzDecimals), x, marginTop + plotH + 6);
+    }
+
+    const intTicks = computeTicks(vp.intMin, vp.intMax, 5);
+    const signsToShow = App.mirrorEnabled ? [1, -1] : [1];
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (const sign of signsToShow) {
+      for (const t of intTicks) {
+        const y = relIntToPx(t, sign);
+        if (y < marginTop - 1 || y > marginTop + plotH + 1) continue;
+        ctx.strokeStyle = COLORS.line; ctx.beginPath(); ctx.moveTo(marginLeft, y); ctx.lineTo(marginLeft + plotW, y); ctx.stroke();
+        if (sign === 1) { ctx.fillStyle = COLORS.muted; ctx.fillText(Math.round(t) + '%', marginLeft - 8, y); }
+      }
+    }
+
+    ctx.strokeStyle = COLORS.ink; ctx.lineWidth = 1.2;
+    const base = baselineY();
+    ctx.beginPath(); ctx.moveTo(marginLeft, base); ctx.lineTo(marginLeft + plotW, base); ctx.stroke();
+
+    ctx.strokeStyle = COLORS.line; ctx.lineWidth = 1;
+    ctx.strokeRect(marginLeft, marginTop, plotW, plotH);
+
+    ctx.fillStyle = COLORS.muted; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText('m/z', marginLeft + plotW / 2, cssH - 4);
+    ctx.restore();
+  }
+
+  function drawEmptyState() {
+    ctx.save();
+    ctx.fillStyle = COLORS.muted;
+    ctx.font = '13px ' + MONO_FONT;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('Drop an .mgf file here, or click "Load File" above', marginLeft + plotW / 2, marginTop + plotH / 2);
+    ctx.restore();
+  }
+
+  function drawHoverMarker() {
+    const hit = App.hover; if (!hit) return;
+    const x = mzToPx(hit.spectrum.mz[hit.peakIndex]);
+    const y = relIntToPx(relIntensityOf(hit.spectrum, hit.peakIndex), hit.sign);
+    ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.strokeStyle = COLORS.ink; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+
+  function drawSelectionBox() {
+    const d = App.drag;
+    const x1 = Math.min(d.startX, d.curX), x2 = Math.max(d.startX, d.curX);
+    const y1 = Math.min(d.startY, d.curY), y2 = Math.max(d.startY, d.curY);
+    ctx.fillStyle = 'rgba(30,95,168,0.12)';
+    ctx.strokeStyle = COLORS.accent; ctx.lineWidth = 1;
+    ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+    ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+  }
+
+  function render() {
+    computeMargins();
+    ctx.clearRect(0, 0, cssW, cssH);
+    ctx.fillStyle = COLORS.bg;
+    ctx.fillRect(0, 0, cssW, cssH);
+
+    const a = getA(), b = getB();
+    if (!a) { drawAxesAndGrid(); drawEmptyState(); return; }
+
+    drawAxesAndGrid();
+    drawSpectrumHalf(a, 1, COLORS.accent);
+    if (b) drawSpectrumHalf(b, -1, COLORS.accentB);
+    if (App.hover) drawHoverMarker();
+    if (App.drag && App.drag.mode === 'box' && App.drag.moved) drawSelectionBox();
+  }
+
+  // ── Hit testing ──
+  function hitTestAtPixel(px, py) {
+    const base = baselineY();
+    const sign = App.mirrorEnabled ? (py < base ? 1 : -1) : 1;
+    const spectrum = sign === 1 ? getA() : getB();
+    if (!spectrum || spectrum.peakCount === 0) return null;
+    const mz = pxToMz(px);
+    const idx0 = lowerBound(spectrum.mz, mz);
+    let best = null, bestDist = Infinity;
+    for (let idx = Math.max(0, idx0 - 3); idx < Math.min(spectrum.peakCount, idx0 + 3); idx++) {
+      const x = mzToPx(spectrum.mz[idx]);
+      const dx = Math.abs(px - x);
+      if (dx > 7) continue;
+      const apexY = relIntToPx(relIntensityOf(spectrum, idx), sign);
+      const yMin = Math.min(apexY, base), yMax = Math.max(apexY, base);
+      let dy = 0;
+      if (py < yMin) dy = yMin - py; else if (py > yMax) dy = py - yMax;
+      if (dy > 12) continue;
+      const dist = dx + dy;
+      if (dist < bestDist) { bestDist = dist; best = { spectrum, peakIndex: idx, sign }; }
+    }
+    return best;
+  }
+
+  // ── Interaction ──
+  function withinPlot(x, y) { return x >= marginLeft && x <= marginLeft + plotW && y >= marginTop && y <= marginTop + plotH; }
+
+  function updateHover(x, y) {
+    const hit = withinPlot(x, y) ? hitTestAtPixel(x, y) : null;
+    App.hover = hit;
+    if (!hit) { tooltipEl.style.display = 'none'; render(); return; }
+    const s = hit.spectrum, idx = hit.peakIndex;
+    const rel = relIntensityOf(s, idx);
+    tooltipEl.innerHTML = '<b>' + s.mz[idx].toFixed(4) + '</b> m/z<br>' +
+      s.intensity[idx].toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' abs &middot; ' + rel.toFixed(1) + '% rel';
+    tooltipEl.style.left = (x + 16) + 'px';
+    tooltipEl.style.top = (y + 16) + 'px';
+    tooltipEl.style.display = 'block';
+    render();
+  }
+
+  function handleClick(x, y) {
+    const hit = hitTestAtPixel(x, y);
+    if (!hit) return;
+    const key = hit.spectrum.index;
+    const set = App.labelToggles.get(key) || new Set();
+    if (set.has(hit.peakIndex)) set.delete(hit.peakIndex); else set.add(hit.peakIndex);
+    App.labelToggles.set(key, set);
+  }
+
+  canvas.addEventListener('mousemove', (e) => {
+    if (App.drag) return;
+    const rect = canvas.getBoundingClientRect();
+    updateHover(e.clientX - rect.left, e.clientY - rect.top);
+  });
+  canvas.addEventListener('mouseleave', () => {
+    if (App.drag) return;
+    App.hover = null; tooltipEl.style.display = 'none'; render();
+  });
+
+  canvas.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    if (!withinPlot(x, y)) return;
+    App.drag = { mode: e.shiftKey ? 'box' : 'pan', startX: x, startY: y, curX: x, curY: y, startVp: Object.assign({}, App.viewport), moved: false };
+    canvas.style.cursor = e.shiftKey ? 'crosshair' : 'grabbing';
+    e.preventDefault();
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!App.drag) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    const d = App.drag;
+    d.curX = x; d.curY = y;
+    const dx = x - d.startX, dy = y - d.startY;
+    if (!d.moved && (Math.abs(dx) + Math.abs(dy)) > 4) d.moved = true;
+    if (d.mode === 'pan' && d.moved) {
+      const svp = d.startVp;
+      const mzPerPx = (svp.mzMax - svp.mzMin) / plotW;
+      const intPerPx = (svp.intMax - svp.intMin) / (App.mirrorEnabled ? plotH / 2 : plotH);
+      App.viewport.mzMin = svp.mzMin - dx * mzPerPx;
+      App.viewport.mzMax = svp.mzMax - dx * mzPerPx;
+      App.viewport.intMin = svp.intMin + dy * intPerPx;
+      App.viewport.intMax = svp.intMax + dy * intPerPx;
+      clampViewport();
+    }
+    render();
+  });
+
+  window.addEventListener('mouseup', (e) => {
+    if (!App.drag) return;
+    const d = App.drag;
+    const rect = canvas.getBoundingClientRect();
+    if (d.mode === 'box' && d.moved) {
+      const x1 = Math.min(d.startX, d.curX), x2 = Math.max(d.startX, d.curX);
+      const y1 = Math.min(d.startY, d.curY), y2 = Math.max(d.startY, d.curY);
+      const mzA = pxToMz(x1), mzB = pxToMz(x2);
+      App.viewport.mzMin = Math.min(mzA, mzB);
+      App.viewport.mzMax = Math.max(mzA, mzB);
+      if (!App.mirrorEnabled) {
+        const intA = pxToRelInt(y1, 1), intB = pxToRelInt(y2, 1);
+        App.viewport.intMin = Math.min(intA, intB);
+        App.viewport.intMax = Math.max(intA, intB);
+      }
+      clampViewport();
+    } else if (!d.moved) {
+      handleClick(d.startX, d.startY);
+    }
+    App.drag = null;
+    canvas.style.cursor = 'default';
+    render();
+  });
+
+  canvas.addEventListener('dblclick', () => { resetViewport(); render(); });
+
+  canvas.addEventListener('wheel', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    if (!withinPlot(x, y)) return;
+    e.preventDefault();
+    const factor = Math.pow(1.0015, -e.deltaY);
+    const vp = App.viewport;
+    if (e.shiftKey) {
+      const sign = App.mirrorEnabled ? (y < baselineY() ? 1 : -1) : 1;
+      const anchor = pxToRelInt(y, sign);
+      vp.intMin = anchor - (anchor - vp.intMin) / factor;
+      vp.intMax = anchor + (vp.intMax - anchor) / factor;
+    } else {
+      const anchor = pxToMz(x);
+      vp.mzMin = anchor - (anchor - vp.mzMin) / factor;
+      vp.mzMax = anchor + (vp.mzMax - anchor) / factor;
+    }
+    clampViewport();
+    render();
+  }, { passive: false });
+
+  // ── Toolbar wiring ──
+  topNInput.addEventListener('input', () => {
+    App.topN = parseInt(topNInput.value, 10);
+    topNVal.textContent = App.topN;
+    render();
+  });
+  resetZoomBtn.addEventListener('click', () => { resetViewport(); render(); });
+
+  // ── Bootstrap ──
+  resizeCanvas();
+  render();
+})();
+</script>
+</body>
+</html>
