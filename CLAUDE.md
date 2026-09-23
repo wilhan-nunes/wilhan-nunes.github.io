@@ -56,3 +56,7 @@ Create a new `.bib` file in `publications/` with a single BibTeX entry, then run
 - Convert LaTeX markup (`\textit{}`, `\textbf{}`, braces) to HTML
 
 Required BibTeX fields: `author`, `title`, `year`. Recommended: `journal`/`publisher`, `volume`, `pages`, `doi`, `month`.
+
+### Syncing from ORCID
+
+`python publications/fetch_orcid.py` queries the ORCID public API (`0000-0002-0609-6678`) and reports DOIs not already in `doi_list.txt` or existing `.bib` filenames (in `publications/` and `publications/preprints/`). It is a dry run by default. `--write` appends the new DOIs to `publications/doi_list.txt`, and `--fetch` also runs `fetch_bibs.sh`. It is not run in CI, because new preprints need manual review.
