@@ -12,7 +12,7 @@ Source for my academic CV website: **[wilhan-nunes.github.io](https://wilhan-nun
 ## Local setup
 
 ```bash
-pip install bibtexparser jinja2 playwright
+pip install "bibtexparser<2" jinja2 playwright
 playwright install chromium
 ```
 

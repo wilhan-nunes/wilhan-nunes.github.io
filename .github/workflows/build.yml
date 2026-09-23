@@ -24,7 +24,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install bibtexparser jinja2 playwright
+          pip install "bibtexparser<2" jinja2 playwright
           python -m playwright install --with-deps chromium
 
       - name: Build publications

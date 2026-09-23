@@ -18,7 +18,7 @@ python build_pdf.py
 
 **Dependencies** (Python 3.11+):
 ```bash
-pip install bibtexparser jinja2 playwright
+pip install "bibtexparser<2" jinja2 playwright
 playwright install chromium
 ```
 
