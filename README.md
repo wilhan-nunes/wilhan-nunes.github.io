@@ -34,7 +34,7 @@ CI runs both automatically on every push to `main` and commits the updated files
 
 ### Syncing from ORCID
 
-`publications/fetch_orcid.py` lists the works on the ORCID record and reports DOIs not yet in the repo (checks `publications/` and `publications/preprints/`):
+`publications/fetch_orcid.py` lists the works on the ORCID record and reports DOIs not yet in the repo (checks `publications/` and `publications/superseded_preprints/`):
 
 ```bash
 python publications/fetch_orcid.py           # dry run: show new DOIs

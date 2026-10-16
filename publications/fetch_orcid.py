@@ -4,7 +4,7 @@ fetch_orcid.py [--orcid ID] [--write | --fetch]
 
 Lists the works on an ORCID record (public API, no auth) and reports the
 DOIs that are not yet in this repo. Known DOIs come from doi_list.txt and
-the existing .bib filenames, in both publications/ and publications/preprints/.
+the existing .bib filenames, in both publications/ and publications/superseded_preprints/.
 
     (default)  dry run: only print what is new
     --write    append new DOIs to publications/doi_list.txt
@@ -21,7 +21,7 @@ from pathlib import Path
 DEFAULT_ORCID = "0000-0002-0609-6678"
 SCRIPT_DIR = Path(__file__).resolve().parent
 DOI_LIST = SCRIPT_DIR / "doi_list.txt"
-KNOWN_DIRS = [SCRIPT_DIR, SCRIPT_DIR / "preprints"]
+KNOWN_DIRS = [SCRIPT_DIR, SCRIPT_DIR / "superseded_preprints"]
 
 # bioRxiv (old + new prefix), ChemRxiv, Research Square
 PREPRINT_PREFIXES = ("10.1101/", "10.64898/", "10.26434/", "10.21203/")
