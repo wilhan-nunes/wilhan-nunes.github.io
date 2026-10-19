@@ -1,0 +1,22 @@
+{% extends "base.html.j2" %}
+{% block content %}
+<header class="page-head">
+  <p class="eyebrow">Tools</p>
+  <h1>Small tools</h1>
+  <p class="lede">Self-contained, single-file browser tools I built for my own work. They run entirely in your browser; nothing is uploaded.</p>
+</header>
+
+<section class="tool-grid">
+  {%- for t in tools %}
+  <a class="tool-card" href="tools/{{ t.file }}">
+    <h2>{{ t.title }}</h2>
+    {%- if t.description %}
+    <p>{{ t.description }}</p>
+    {%- endif %}
+    <span class="tool-file">tools/{{ t.file }}</span>
+  </a>
+  {%- else %}
+  <p class="muted">No tools yet.</p>
+  {%- endfor %}
+</section>
+{% endblock %}

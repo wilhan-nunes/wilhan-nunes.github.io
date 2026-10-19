@@ -1,0 +1,67 @@
+{% extends "base.html.j2" %}
+{% from "macros.html.j2" import pub, entry, education, skills %}
+{% block content %}
+<div class="cv-actions">
+  <p>The full CV on one page. It is also the source of the PDF.</p>
+  <a class="btn primary" href="Wilhan_Nunes_CV.pdf" download>Download PDF</a>
+</div>
+
+<article class="cv">
+  <header class="cv-head">
+    <div>
+      <h1>{{ person.first_name }} <em>{{ person.last_name }}</em></h1>
+      <p class="eyebrow">{{ person.degree }}</p>
+      <p class="role">{{ person.role }} · {{ person.field }}</p>
+    </div>
+    <div class="cv-contact">
+      <a href="mailto:{{ person.email }}">{{ person.email }}</a>
+      <span>{{ person.institution }}</span>
+      <span>{{ person.location }}</span>
+      <span class="cv-profiles">
+        {%- for p in profiles %}<a href="{{ p.url }}">{{ p.name }}</a>{% if not loop.last %} · {% endif %}{% endfor -%}
+      </span>
+    </div>
+  </header>
+
+  <section class="cv-section">
+    <h2 class="label">Profile</h2>
+    <p class="cv-summary">{{ summary.text }}</p>
+  </section>
+
+  <section class="cv-section">
+    <h2 class="label">Research</h2>
+    {%- for r in research %}
+    {{ entry(r) }}
+    {%- endfor %}
+  </section>
+
+  <section class="cv-section">
+    <h2 class="label">Past professional experience</h2>
+    {%- for e in experience %}
+    {{ entry(e) }}
+    {%- endfor %}
+  </section>
+
+  <section class="cv-section">
+    <h2 class="label">Education</h2>
+    {{ education(cv_education) }}
+  </section>
+
+  <section class="cv-section">
+    <h2 class="label">Skills</h2>
+    {{ skills(cv_skills) }}
+  </section>
+
+  <section class="cv-section">
+    <h2 class="label">Publications</h2>
+    {%- for kind, heading in [("article", "Peer-reviewed articles"), ("preprint", "Preprints")] %}
+    <h3 class="cv-sub">{{ heading }} <span>({{ pub_counts[kind] }})</span></h3>
+    <ol class="cv-pubs" reversed>
+      {%- for p in publications if p.type == kind %}
+      <li>{{ pub(p, show_year=true) }}</li>
+      {%- endfor %}
+    </ol>
+    {%- endfor %}
+  </section>
+</article>
+{% endblock %}

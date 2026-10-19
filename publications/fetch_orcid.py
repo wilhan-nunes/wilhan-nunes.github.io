@@ -5,6 +5,7 @@ fetch_orcid.py [--orcid ID] [--write | --fetch]
 Lists the works on an ORCID record (public API, no auth) and reports the
 DOIs that are not yet in this repo. Known DOIs come from doi_list.txt and
 the existing .bib filenames, in both publications/ and publications/superseded_preprints/.
+DOIs listed in publications/ignored_dois.txt (rejected suggestions) are skipped.
 
     (default)  dry run: only print what is new
     --write    append new DOIs to publications/doi_list.txt
@@ -22,6 +23,7 @@ DEFAULT_ORCID = "0000-0002-0609-6678"
 SCRIPT_DIR = Path(__file__).resolve().parent
 DOI_LIST = SCRIPT_DIR / "doi_list.txt"
 KNOWN_DIRS = [SCRIPT_DIR, SCRIPT_DIR / "superseded_preprints"]
+IGNORED = SCRIPT_DIR / "ignored_dois.txt"
 
 # bioRxiv (old + new prefix), ChemRxiv, Research Square
 PREPRINT_PREFIXES = ("10.1101/", "10.64898/", "10.26434/", "10.21203/")
@@ -73,6 +75,9 @@ def known_keys() -> set[str]:
         if doi_list.exists():
             keys |= {match_key(l) for l in doi_list.read_text().splitlines() if l.strip()}
         keys |= {match_key(p.stem) for p in folder.glob("*.bib")}
+    if IGNORED.exists():
+        keys |= {match_key(l) for l in IGNORED.read_text().splitlines()
+                 if l.strip() and not l.startswith("#")}
     return keys
 
 

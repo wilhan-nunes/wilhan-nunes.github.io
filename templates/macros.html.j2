@@ -1,0 +1,63 @@
+{% macro authors(list) -%}
+{%- for a in list -%}
+{%- if a.etal %} et al.{% elif a.ellipsis %}…, {% else %}{% if a.me %}<strong class="me">{{ a.name }}</strong>{% else %}{{ a.name }}{% endif %}{% if not loop.last and not list[loop.index0 + 1].etal %}, {% endif %}{% endif -%}
+{%- endfor -%}
+{%- endmacro %}
+
+{% macro pub(p, show_year=false) -%}
+<article class="pub {{ p.type }}{% if p.first_author %} first-author{% endif %}" data-type="{{ p.type }}"{% if p.first_author %} data-first="1"{% endif %}>
+  <p class="pub-title">{{ p.title }}{% if p.type == 'preprint' %} <span class="badge badge-preprint">Preprint</span>{% endif %}</p>
+  <p class="pub-authors">{{ authors(p.authors) }}</p>
+  <p class="pub-venue">
+    <em>{{ p.journal }}</em>
+    {%- if p.volume %}, {{ p.volume }}{% endif %}
+    {%- if p.pages %}, {{ p.pages }}{% endif %}
+    {%- if show_year %} ({{ p.year }}){% endif %}
+    {%- if p.doi %} <a class="doi" href="https://doi.org/{{ p.doi }}" target="_blank" rel="noopener">doi:{{ p.doi }}</a>{% endif %}
+  </p>
+</article>
+{%- endmacro %}
+
+{% macro entry(e) -%}
+<div class="entry">
+  <div class="entry-date">{{ e.dates }}{% if e.current %} <span class="dot" aria-label="current"></span>{% endif %}</div>
+  <div class="entry-body">
+    <h3>{{ e.title }}</h3>
+    <p class="org">{{ e.org }}</p>
+    {%- if e.text %}
+    <p>{{ e.text }}</p>
+    {%- endif %}
+    {%- if e.bullets %}
+    <ul>
+      {%- for b in e.bullets %}
+      <li>{{ b }}</li>
+      {%- endfor %}
+    </ul>
+    {%- endif %}
+  </div>
+</div>
+{%- endmacro %}
+
+{% macro education(list) -%}
+{%- for e in list %}
+<div class="entry">
+  <div class="entry-date">{{ e.dates }}</div>
+  <div class="entry-body">
+    <h3>{{ e.degree }}</h3>
+    <p class="org">{{ e.institution }}</p>
+    <p class="org">{{ e.advisor }}</p>
+  </div>
+</div>
+{%- endfor %}
+{%- endmacro %}
+
+{% macro skills(list) -%}
+<dl class="skills">
+  {%- for s in list %}
+  <div class="skill-row">
+    <dt>{{ s.group }}</dt>
+    <dd>{% for i in s["items"] %}<span class="chip">{{ i }}</span>{% endfor %}</dd>
+  </div>
+  {%- endfor %}
+</dl>
+{%- endmacro %}

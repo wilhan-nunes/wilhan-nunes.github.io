@@ -24,19 +24,27 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "bibtexparser<2" jinja2 playwright
+          pip install -r requirements.txt
           python -m playwright install --with-deps chromium
 
-      - name: Build publications
-        run: python build_publications.py
+      # DOIs added to doi_list.txt by hand get their .bib downloaded here
+      - name: Fetch missing .bib files
+        run: bash publications/fetch_bibs.sh publications/doi_list.txt
+
+      - name: Build site
+        run: python build_site.py
 
       - name: Build PDF
         run: python build_pdf.py
+
+      - name: Build DOCX (kept in repo, not published)
+        run: python build_docx.py
 
       - name: Commit updated generated files
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html _publications.html Wilhan_Nunes_CV.pdf
-          git diff --cached --quiet || git commit -m "chore: rebuild publications and pdf [skip ci]"
+          git add index.html research.html experience.html publications.html tools.html cv.html \
+                  Wilhan_Nunes_CV.pdf _private publications
+          git diff --cached --quiet || git commit -m "chore: rebuild site, pdf and docx [skip ci]"
           git push

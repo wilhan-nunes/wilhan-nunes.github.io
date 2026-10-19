@@ -1,0 +1,4 @@
+bibtexparser<2
+jinja2
+playwright
+python-docx

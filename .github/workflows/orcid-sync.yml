@@ -1,0 +1,54 @@
+name: ORCID sync
+
+# Checks ORCID for works not yet in the CV and opens (or updates) a pull
+# request with the new .bib files. Merge it to approve; close it to reject,
+# which records the DOIs in publications/ignored_dois.txt (orcid-reject.yml).
+
+on:
+  schedule:
+    - cron: "0 14 * * 1"        # Mondays 14:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Query ORCID and fetch new .bib files
+        run: |
+          python publications/fetch_orcid.py --fetch | tee "$RUNNER_TEMP/orcid.txt"
+          {
+            echo "ORCID lists works that are not in the CV yet. The \`.bib\` files were fetched from doi.org."
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/orcid.txt"
+            echo '```'
+            echo
+            echo "**Merge** to add them to the site, PDF and DOCX."
+            echo "**Close** without merging to reject them all (their DOIs go to \`publications/ignored_dois.txt\` and won't be suggested again)."
+            echo
+            echo "To keep only some: before merging, delete the unwanted \`.bib\` files and their lines in \`doi_list.txt\` on this branch, and add those DOIs to \`ignored_dois.txt\`."
+            echo "If a preprint here is already in the CV as its published article, move its \`.bib\` and DOI to \`publications/superseded_preprints/\` instead."
+          } > "$RUNNER_TEMP/body.md"
+
+      - name: Open pull request for approval
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: orcid-sync
+          delete-branch: true
+          commit-message: "publications: add new works from ORCID"
+          title: "New publications from ORCID"
+          body-path: ${{ runner.temp }}/body.md
+          add-paths: publications/*
+          labels: publications

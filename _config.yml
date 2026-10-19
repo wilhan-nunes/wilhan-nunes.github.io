@@ -1,0 +1,13 @@
+# GitHub Pages (Jekyll) config. Underscore-prefixed paths such as _private/
+# are never published; the build sources below are excluded too.
+exclude:
+  - _private/
+  - content/
+  - templates/
+  - sitegen/
+  - publications/
+  - "*.py"
+  - "*.toml"
+  - CLAUDE.md
+  - README.md
+  - LICENSE

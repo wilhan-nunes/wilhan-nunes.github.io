@@ -1,0 +1,45 @@
+{% extends "base.html.j2" %}
+{% from "macros.html.j2" import pub, entry %}
+{% block content %}
+<section class="hero">
+  <p class="eyebrow">{{ person.degree }}</p>
+  <h1>{{ person.first_name }} <em>{{ person.last_name }}</em></h1>
+  <p class="role">{{ person.role }} · {{ person.field }}<br>{{ person.institution }}</p>
+  <p class="lede">{{ summary.text }}</p>
+  <div class="links">
+    <a class="btn primary" href="mailto:{{ person.email }}">{{ person.email }}</a>
+    {%- for p in profiles %}
+    <a class="btn" href="{{ p.url }}" target="_blank" rel="me noopener noreferrer"><img src="{{ p.icon }}" alt="" />{{ p.name }}</a>
+    {%- endfor %}
+  </div>
+</section>
+
+<section class="stats" aria-label="Publication summary">
+  <a href="publications.html" class="stat"><span class="num">{{ pub_counts.article }}</span><span class="lbl">Peer-reviewed articles</span></a>
+  <a href="publications.html#preprints" class="stat"><span class="num">{{ pub_counts.preprint }}</span><span class="lbl">Preprints</span></a>
+  <a href="publications.html#first" class="stat"><span class="num">{{ pub_counts.first_author }}</span><span class="lbl">First-author papers</span></a>
+  <a href="publications.html" class="stat"><span class="num">{{ publications[-1].year }}–{{ publications[0].year }}</span><span class="lbl">Years publishing</span></a>
+</section>
+
+<section class="block">
+  <div class="block-head">
+    <h2 class="label">Currently</h2>
+    <a class="more" href="research.html">All research →</a>
+  </div>
+  {%- for r in research if r.current %}
+  {{ entry(r) }}
+  {%- endfor %}
+</section>
+
+<section class="block">
+  <div class="block-head">
+    <h2 class="label">Recent publications</h2>
+    <a class="more" href="publications.html">All {{ publications|length }} →</a>
+  </div>
+  <div class="pub-list">
+    {%- for p in publications[:5] %}
+    {{ pub(p, show_year=true) }}
+    {%- endfor %}
+  </div>
+</section>
+{% endblock %}

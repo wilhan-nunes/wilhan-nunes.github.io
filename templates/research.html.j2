@@ -1,0 +1,14 @@
+{% extends "base.html.j2" %}
+{% from "macros.html.j2" import entry %}
+{% block content %}
+<header class="page-head">
+  <p class="eyebrow">Research</p>
+  <h1>Projects</h1>
+  <p class="lede">From thermoanalysis of coordination compounds to large-scale computational metabolomics.</p>
+</header>
+<section class="block">
+  {%- for r in research %}
+  {{ entry(r) }}
+  {%- endfor %}
+</section>
+{% endblock %}

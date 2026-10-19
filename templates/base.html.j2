@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% if page_title %}{{ page_title }} · {% endif %}{{ person.first_name }} {{ person.last_name }}, Ph.D.</title>
+  <meta name="description" content="{{ description or person.role ~ ' · ' ~ person.field ~ ' · ' ~ person.institution }}" />
+  {%- if noindex %}
+  <meta name="robots" content="noindex" />
+  {%- endif %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&family=DM+Mono:wght@300;400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ root }}static/style.css" />
+</head>
+<body class="page-{{ page }}">
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrapper bar">
+      <a class="brand" href="{{ root }}index.html">{{ person.first_name }} <em>{{ person.last_name }}</em></a>
+      <nav aria-label="Main">
+        <ul>
+          {%- for slug, label in nav %}
+          <li><a href="{{ root }}{{ slug }}.html"{% if slug == page %} aria-current="page"{% endif %}>{{ label }}</a></li>
+          {%- endfor %}
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="wrapper">
+{% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrapper">
+      <span>© {{ year }} {{ person.full_name }}</span>
+      <span>{{ person.institution }} · <a href="mailto:{{ person.email }}">{{ person.email }}</a></span>
+    </div>
+  </footer>
+{% block scripts %}{% endblock %}
+</body>
+</html>
