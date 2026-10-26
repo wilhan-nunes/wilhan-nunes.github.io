@@ -10,6 +10,12 @@
     <dt>Email</dt>
     <dd><a href="mailto:{{ person.email }}">{{ person.email }}</a></dd>
   </div>
+  {%- if person.institutional_email %}
+  <div class="contact-row">
+    <dt>Institutional email</dt>
+    <dd><a href="mailto:{{ person.institutional_email }}">{{ person.institutional_email }}</a></dd>
+  </div>
+  {%- endif %}
   <div class="contact-row">
     <dt>Affiliation</dt>
     <dd>{{ person.role }} · {{ person.field }}<br>{{ person.institution }}<br><span class="muted">{{ person.location }}</span></dd>

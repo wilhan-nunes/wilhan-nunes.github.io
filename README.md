@@ -46,20 +46,25 @@ You can add a publication in any of three ways:
 
 1. **Drop a `.bib` file** into `publications/` (one entry per file, named after the DOI with `/` → `_`) and push.
 2. **Write the DOI** on a new line in `publications/doi_list.txt` and push. CI downloads the `.bib`.
-3. **ORCID sync**: `.github/workflows/orcid-sync.yml` checks ORCID every Monday (or run it by hand from the
-   Actions tab). New works are fetched into a pull request titled *New publications from ORCID*.
+3. **ORCID / OpenAlex sync**: `.github/workflows/orcid-sync.yml` checks ORCID (`0000-0002-0609-6678`) and
+   OpenAlex (author `A5004018161`) every Monday, or run it by hand from the Actions tab. New works are fetched
+   into a pull request titled *New publications from ORCID / OpenAlex*, and each DOI is tagged with its source.
+   OpenAlex datasets, software, dissertations and Zenodo/figshare mirrors are skipped. OpenAlex can still
+   misattribute works or list conference abstracts, so check anything tagged only `[OpenAlex]`.
    - **Merge** the pull request to approve.
    - **Close** it to reject. `orcid-reject.yml` adds those DOIs to `publications/ignored_dois.txt` so they aren't suggested again.
 
-   For ORCID sync to open pull requests, turn on *Settings → Actions → General → Allow GitHub Actions to create and approve pull requests*.
+   For the sync to open pull requests, turn on *Settings → Actions → General → Allow GitHub Actions to create and approve pull requests*.
+   Optional: add an `OPENALEX_API_KEY` repository secret (free key at openalex.org/settings/api) so the sync doesn't
+   share OpenAlex's anonymous daily allowance.
 
 When a preprint is published, move its `.bib` and DOI to `publications/superseded_preprints/`.
 The build ignores that folder, and ORCID sync won't suggest the preprint again.
 
-You can also run the ORCID check locally:
+You can also run the ORCID / OpenAlex check locally (`--openalex ""` skips OpenAlex):
 
 ```bash
-python publications/fetch_orcid.py           # dry run: show new DOIs
+python publications/fetch_orcid.py           # dry run: show new DOIs from both sources
 python publications/fetch_orcid.py --write   # append them to doi_list.txt
 python publications/fetch_orcid.py --fetch   # append + run fetch_bibs.sh
 ```

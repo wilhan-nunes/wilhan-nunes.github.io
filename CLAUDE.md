@@ -41,7 +41,7 @@ tools/*.html ────┘                     │                            
 ### CI/CD
 
 - `build.yml` runs on push to `main`. It fetches `.bib` files for DOIs in `doi_list.txt` that don't have one yet, builds the site, PDF and DOCX, and commits them with `[skip ci]`.
-- `orcid-sync.yml` runs weekly and on manual dispatch. It runs `fetch_orcid.py --fetch` and opens or updates a PR on the `orcid-sync` branch. The PR is the approval step: merging approves.
+- `orcid-sync.yml` runs weekly and on manual dispatch. It runs `fetch_orcid.py --fetch` (ORCID + OpenAlex author `A5004018161`; optional `OPENALEX_API_KEY` secret) and opens or updates a PR on the `orcid-sync` branch. The PR is the approval step: merging approves.
 - `orcid-reject.yml`: closing that PR unmerged appends its DOIs to `publications/ignored_dois.txt`.
 
 ## Adding Publications
@@ -50,4 +50,4 @@ Drop a `.bib` in `publications/`, or add a DOI to `publications/doi_list.txt`, o
 
 `publications/superseded_preprints/` holds preprints that were later published as articles. The build does not read it, so new preprints go directly in `publications/`. When a preprint is published, move its `.bib` and DOI there so ORCID sync doesn't report it again.
 
-`python publications/fetch_orcid.py` is a dry run by default. `--write` appends new DOIs to `doi_list.txt`, and `--fetch` also runs `fetch_bibs.sh`. Known DOIs come from `doi_list.txt` files, `.bib` filenames in both folders, and `ignored_dois.txt`.
+`python publications/fetch_orcid.py` queries ORCID and OpenAlex (OpenAlex results are filtered to article/preprint/review-like types, skipping Zenodo/figshare mirrors; each new DOI is tagged with its source). It is a dry run by default. `--write` appends new DOIs to `doi_list.txt`, and `--fetch` also runs `fetch_bibs.sh`. Known DOIs come from `doi_list.txt` files, `.bib` filenames in both folders, and `ignored_dois.txt`.

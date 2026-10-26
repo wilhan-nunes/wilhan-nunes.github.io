@@ -248,6 +248,9 @@ def add_header(doc: Document, cv: dict) -> None:
 
     contact = doc.add_paragraph()
     add_hyperlink(contact, f"mailto:{p['email']}", p["email"], underline=False)
+    if p.get("institutional_email"):
+        add_rich_text(contact, "  ·  ", color=MUTED)
+        add_hyperlink(contact, f"mailto:{p['institutional_email']}", p["institutional_email"], underline=False)
     add_rich_text(contact, f"  ·  {p['institution']}  ·  {p['location']}", color=MUTED)
     spacing(contact, after=1)
 

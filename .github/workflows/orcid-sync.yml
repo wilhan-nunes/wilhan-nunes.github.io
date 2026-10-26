@@ -1,6 +1,6 @@
 name: ORCID sync
 
-# Checks ORCID for works not yet in the CV and opens (or updates) a pull
+# Checks ORCID and OpenAlex for works not yet in the CV and opens (or updates) a pull
 # request with the new .bib files. Merge it to approve; close it to reject,
 # which records the DOIs in publications/ignored_dois.txt (orcid-reject.yml).
 
@@ -25,11 +25,13 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Query ORCID and fetch new .bib files
+      - name: Query ORCID + OpenAlex and fetch new .bib files
+        env:
+          OPENALEX_API_KEY: ${{ secrets.OPENALEX_API_KEY }}   # optional
         run: |
           python publications/fetch_orcid.py --fetch | tee "$RUNNER_TEMP/orcid.txt"
           {
-            echo "ORCID lists works that are not in the CV yet. The \`.bib\` files were fetched from doi.org."
+            echo "ORCID and/or OpenAlex list works that are not in the CV yet. OpenAlex profiles are built automatically and can include misattributed works or conference abstracts, so check those tagged only \`[OpenAlex]\`. The \`.bib\` files were fetched from doi.org."
             echo
             echo '```'
             cat "$RUNNER_TEMP/orcid.txt"
@@ -47,8 +49,8 @@ jobs:
         with:
           branch: orcid-sync
           delete-branch: true
-          commit-message: "publications: add new works from ORCID"
-          title: "New publications from ORCID"
+          commit-message: "publications: add new works from ORCID / OpenAlex"
+          title: "New publications from ORCID / OpenAlex"
           body-path: ${{ runner.temp }}/body.md
           add-paths: publications/*
           labels: publications

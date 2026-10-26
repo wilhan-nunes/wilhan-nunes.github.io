@@ -15,6 +15,9 @@
     </div>
     <div class="cv-contact">
       <a href="mailto:{{ person.email }}">{{ person.email }}</a>
+      {%- if person.institutional_email %}
+      <a href="mailto:{{ person.institutional_email }}">{{ person.institutional_email }}</a>
+      {%- endif %}
       <span>{{ person.institution }}</span>
       <span>{{ person.location }}</span>
       <span class="cv-profiles">
