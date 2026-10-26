@@ -308,6 +308,22 @@ strong.me { font-weight: 600; }
 .tool-card p { font-size: .85rem; color: var(--body); flex: 1; }
 .tool-file { font-family: var(--mono); font-size: .68rem; color: var(--muted); }
 
+/* ── Contact ── */
+.contact-list { padding: 1rem 0 3rem; }
+.contact-row {
+  display: grid; grid-template-columns: 140px 1fr; gap: 0 2rem;
+  padding: 1.1rem 0; border-top: 1px solid var(--line); align-items: baseline;
+}
+.contact-row:first-child { border-top: none; }
+.contact-row dt {
+  font-family: var(--mono); font-size: .7rem; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--muted);
+}
+.contact-row dd { font-size: .95rem; line-height: 1.6; }
+.contact-row dd a { display: inline-flex; align-items: center; gap: .45rem; }
+.contact-row img { width: 1em; height: 1em; }
+.contact-row .muted { font-size: .82rem; }
+
 /* ── CV page ── */
 .cv-actions {
   display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center;
@@ -353,15 +369,15 @@ strong.me { font-weight: 600; }
   .bar-right { width: 100%; }
   .theme-toggle { position: absolute; right: 1rem; top: .45rem; }
   nav { width: 100%; overflow-x: auto; scrollbar-width: none; }
-  nav ul { gap: .85rem; flex-wrap: nowrap; padding-bottom: .45rem; }
-  nav a { white-space: nowrap; font-size: .64rem; letter-spacing: .05em; }
+  nav ul { gap: .6rem; flex-wrap: nowrap; padding-bottom: .45rem; }
+  nav a { white-space: nowrap; font-size: .6rem; letter-spacing: .02em; }
   .hero { padding-top: 2.6rem; }
   .pub-tools { position: static; }
   .stats { grid-template-columns: repeat(2, 1fr); }
   .stat:nth-child(2) { border-right: none; }
   .stat:nth-child(3) { padding-left: 0; }
   .stat:nth-child(n+3) { border-top: 1px solid var(--line); }
-  .entry, .skill-row, .year-group { grid-template-columns: 1fr; gap: .25rem; }
+  .entry, .skill-row, .year-group, .contact-row { grid-template-columns: 1fr; gap: .25rem; }
   .year { padding-top: 0; }
   .cv-contact { text-align: left; }
 }

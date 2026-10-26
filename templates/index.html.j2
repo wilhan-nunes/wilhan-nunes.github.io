@@ -7,7 +7,6 @@
   <p class="role">{{ person.role }} · {{ person.field }}<br>{{ person.institution }}</p>
   <p class="lede">{{ summary.text }}</p>
   <div class="links">
-    <a class="btn primary" href="mailto:{{ person.email }}">{{ person.email }}</a>
     {%- for p in profiles %}
     <a class="btn" href="{{ p.url }}" target="_blank" rel="me noopener noreferrer"><img src="{{ p.icon }}" alt="" />{{ p.name }}</a>
     {%- endfor %}

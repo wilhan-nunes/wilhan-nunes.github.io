@@ -9,7 +9,7 @@ Usage:
 
 Output (repo root, served by GitHub Pages):
     index.html, research.html, experience.html, publications.html,
-    tools.html, cv.html (cv.html is also the source of the PDF)
+    tools.html, cv.html, contact.html (cv.html is also the source of the PDF)
 """
 
 import datetime as dt
@@ -29,6 +29,7 @@ PAGES = [
     ("publications", "Publications", "Publications"),
     ("tools",        "Tools",        "Tools"),
     ("cv",           "CV",           "Curriculum Vitae"),
+    ("contact",      "Contact",      "Contact"),
 ]
 
 
