@@ -55,6 +55,8 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 .wrapper { max-width: 880px; margin: 0 auto; padding: 0 2rem; }
 
+[hidden] { display: none !important; }
+
 .skip { position: absolute; left: -999px; }
 .skip:focus { left: 1rem; top: 1rem; background: var(--bg); padding: .4rem .8rem; z-index: 99; }
 
@@ -128,7 +130,7 @@ nav a[aria-current="page"] { color: var(--accent); border-color: var(--accent); 
 
 .muted { color: var(--muted); }
 
-main > section, .page-head { animation: fadeUp .5s ease both; }
+main > section:not(.year-group), .page-head { animation: fadeUp .5s ease both; }
 main > section:nth-child(2) { animation-delay: .06s; }
 main > section:nth-child(3) { animation-delay: .12s; }
 main > section:nth-child(4) { animation-delay: .18s; }
@@ -192,6 +194,8 @@ main > section:nth-child(4) { animation-delay: .18s; }
   font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 600; letter-spacing: -0.01em;
   line-height: 1.1; margin: .35rem 0 .8rem;
 }
+
+.page-head .summary { font-size: 1rem; color: var(--muted); max-width: 720px; line-height: 1.7; }
 
 /* ── Entries ── */
 .entry {

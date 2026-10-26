@@ -2,9 +2,10 @@
 {% from "macros.html.j2" import pub %}
 {% block content %}
 <header class="page-head">
-  <p class="eyebrow">Publications</p>
-  <h1>{{ publications|length }} papers</h1>
-  <p class="lede">{{ pub_counts.article }} peer-reviewed articles and {{ pub_counts.preprint }} preprints. My name is shown in <strong class="me">bold</strong>.</p>
+  <h1>Publications</h1>
+  {%- set scholar = profiles|selectattr("name", "equalto", "Google Scholar")|first %}
+  <p class="summary">{{ pub_counts.article }} peer-reviewed papers and {{ pub_counts.preprint }} preprints, {{ pub_counts.first_author }} as first author.
+    {%- if scholar %} For citation metrics, see my <a href="{{ scholar.url }}" target="_blank" rel="noopener">Google Scholar profile</a>.{% endif %}</p>
 </header>
 
 <div class="pub-tools" role="search">
