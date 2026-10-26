@@ -3,7 +3,7 @@
 {% block content %}
 <section class="hero">
   <p class="eyebrow">{{ person.degree }}</p>
-  <h1>{{ person.first_name }} <em>{{ person.last_name }}</em></h1>
+  <h1>{{ person.first_name }} {{ person.last_name }}<span class="period">.</span></h1>
   <p class="role">{{ person.role }} · {{ person.field }}<br>{{ person.institution }}</p>
   <p class="lede">{{ summary.text }}</p>
   <div class="links">
