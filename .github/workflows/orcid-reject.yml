@@ -1,0 +1,36 @@
+name: ORCID reject
+
+# When an ORCID sync pull request is closed without merging, remember its
+# DOIs in publications/ignored_dois.txt so they are not suggested again.
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  reject:
+    if: github.event.pull_request.merged == false && github.event.pull_request.head.ref == 'orcid-sync'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: 0
+
+      - name: Record rejected DOIs
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git fetch origin "$HEAD_SHA"
+          git diff "$BASE_SHA...$HEAD_SHA" -- publications/doi_list.txt \
+            | grep -E '^\+[^+]' | sed 's/^+//' >> publications/ignored_dois.txt || true
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add publications/ignored_dois.txt
+          git diff --cached --quiet || git commit -m "publications: ignore DOIs rejected in #${{ github.event.pull_request.number }} [skip ci]"
+          git push

@@ -28,7 +28,11 @@ while IFS= read -r DOI || [[ -n "$DOI" ]]; do
     fi
 
     echo "Fetching: $DOI"
-    curl -LH "Accept: application/x-bibtex" "https://doi.org/${DOI}" -o "$OUTPUT_FILE"
+    if ! curl -fsSLH "Accept: application/x-bibtex" "https://doi.org/${DOI}" -o "$OUTPUT_FILE"; then
+        echo "Warning: could not fetch $DOI" >&2
+        rm -f "$OUTPUT_FILE"
+        continue
+    fi
 
     # echo "Formatting: $OUTPUT_FILE"
     # biber --tool --quiet --output-legacy-dates --output-file="$OUTPUT_FILE" "$OUTPUT_FILE" 2>/dev/null \

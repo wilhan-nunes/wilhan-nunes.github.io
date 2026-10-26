@@ -1,0 +1,135 @@
+# Hand-edited CV content. Every output (site pages, PDF, DOCX) is built from
+# this file plus publications/*.bib. Inline <strong>/<em> tags are allowed in
+# text fields; they render as bold/italic in the DOCX too.
+
+[person]
+first_name = "Wilhan"
+last_name = "Nunes"
+full_name = "Wilhan D. G. Nunes"
+degree = "Ph.D. in Chemistry"
+role = "Research Staff Associate II"
+field = "Computational Metabolomics"
+email = "wdgnsl@gmail.com"
+institutional_email = "wdnunes@health.ucsd.edu"
+institution = "University of California, San Diego"
+location = "La Jolla, CA 92093"
+# Name variants as they appear in BibTeX author lists, highlighted on the site
+# and in the CV. Compared against the formatted "Last I." form.
+author_aliases = [
+  "Nunes W.D.G.", "Nunes W.D.", "Nunes W.G.", "Nunes W.",
+  "Gonçalves Nunes W.D.", "Gonçalves Nunes W.D.G.",
+]
+
+[[profiles]]
+name = "ORCID"
+url = "https://orcid.org/0000-0002-0609-6678"
+icon = "assets/orcid-16x16.png"
+
+[[profiles]]
+name = "Google Scholar"
+url = "https://scholar.google.com/citations?user=4cPVoeIAAAAJ&hl=en"
+icon = "assets/google-scholar.svg"
+
+[[profiles]]
+name = "LinkedIn"
+url = "https://www.linkedin.com/in/wilhan-nunes/"
+icon = "assets/linkedin.svg"
+
+[summary]
+text = """
+Research Staff Associate II specializing in computational metabolomics at UC San Diego.
+My work spans the creation and curation of microbial metabolite databases, development of
+mass spectrometry-based analytical workflows, and web-based tools that bridge experts and
+non-experts in the metabolomics field. With over a decade of academic experience across
+multiple institutions in Brazil and the US, I bring a track record in both research and teaching.
+"""
+
+[[research]]
+dates = "2024 — Present"
+title = "Computational Metabolomics & Resource Development"
+org = "Dr. Pieter C. Dorrestein · Skaggs School of Pharmacy, UC San Diego"
+current = true
+bullets = [
+  "<strong>Microbial metabolite knowledgebase:</strong> Development of the Collaborative Microbial Metabolite Center knowledgebase (CMMC-kb), integrating spectral and structural data of microbial metabolites with biological information including producers, bioactivity, and biosynthesis.",
+  "<strong>Open science tools:</strong> Designed and coded the user interface for MetaboApps — a suite of modular web applications delivering accessible, standardized GNPS-based metabolomics workflows to the broader scientific community.",
+]
+
+[[research]]
+dates = "2015 — 2018"
+title = "Synthesis and Thermoanalysis of Lanthanide/Yttrium Isonicotinates"
+org = "Doctoral thesis · Dr. Flavio J. Caires & Dr. Massao Ionashiro · UNESP, Brazil"
+text = "Synthesized and characterized Ln(III)/Y(III) isonicotinate complexes and evaluated their thermal behavior using TGA, DSC, XRD, and wet-chemistry analysis. Funded by CAPES doctoral scholarship."
+
+[[research]]
+dates = "2013 — 2015"
+title = "Synthesis and Thermoanalysis of Lanthanide Isophthalates"
+org = "Master's dissertation · Dr. Elias Y. Ionashiro · UFG, Brazil"
+text = "Prepared and characterized isophthalate complexes of La(III), Ce(III), Pr(III), Nd(III), Sm(III), Eu(III), and Gd(III), correlating structure with thermal stability via TGA, DSC, and XRD. Supported by CAPES scholarship."
+
+[[research]]
+dates = "2009 — 2013"
+title = "Low-cost Thin-Film Fabrication & Instrumentation"
+org = "Undergraduate research · Dr. George Barbosa da Silva · UFMT, Brazil"
+text = "Fabricated SnO₂ conductive glass electrodes via spray-pyrolysis and designed dip-coating and spin-coating apparatus using low-cost electronics. Funded annually by CNPq research scholarship."
+
+[[experience]]
+dates = "2022 — 2023"
+title = "Chemistry Professor"
+org = "Federal Institute of Education, Science and Technology of São Paulo (IFSP) · Ilha Solteira, SP, Brazil"
+text = "Delivered Chemistry for Technical Degree tracks in Civil Construction Design and Building."
+
+[[experience]]
+dates = "2018 — 2021"
+title = "Chemistry Professor"
+org = "Federal Institute of Education, Science and Technology of Rondônia (IFRO) · Ji-Paraná, RO, Brazil"
+text = "Led courses in General, Physical, Analytical & Organic Chemistry (Licentiate) and General & Physical Chemistry (Technical tracks)."
+
+[[experience]]
+dates = "Feb – Jul 2018"
+title = "Temporary Chemistry Professor"
+org = "Federal University of Mato Grosso (UFMT) · Barra do Garças, MT, Brazil"
+text = "Lectured Physical & Analytical Chemistry across Chemistry, Pharmacy, and Food Engineering programs."
+
+[[experience]]
+dates = "Aug 2017 – Jan 2018"
+title = "Chemistry Professor Internship"
+org = "Faculty of Sciences, UNESP (Chemistry Department) · Bauru, SP, Brazil"
+text = "Led experimental classes in the General and Inorganic Chemistry Laboratory for the Physics undergraduate program."
+
+[[skills]]
+group = "Computational"
+items = ["Big data mining", "Web application development for metabolomics", "Workflow automation", "Nextflow", "Docker", "Git (branching, rebase, submodules)", "Database development", "MS/MS data acquisition & analysis", "Python", "R", "Bash", "Arduino"]
+
+[[skills]]
+group = "Wet Lab"
+items = ["Sample preparation for LC-MS metabolomics", "Chromatographic method development, optimization, and validation"]
+
+[[skills]]
+group = "Software"
+items = ["GNPS", "MZmine", "ChemDraw", "Cytoscape", "Inkscape"]
+
+[[skills]]
+group = "Languages"
+items = ["Portuguese (native)", "English (fluent)", "French (basic)", "Spanish (basic)"]
+
+[[skills]]
+group = "Soft Skills"
+items = ["Teamwork", "Leadership", "Scientific communication", "Interpersonal skills"]
+
+[[education]]
+dates = "2018 – 2022"
+degree = "Doctor of Philosophy in Chemistry"
+institution = "Institute of Chemistry, São Paulo State University — UNESP · Araraquara, SP, Brazil"
+advisor = "Advisors: Dr. Flavio J. Caires & Dr. Massao Ionashiro"
+
+[[education]]
+dates = "2013 – 2015"
+degree = "Master's in Chemistry"
+institution = "Institute of Chemistry, Federal University of Goiás — UFG · Goiânia, GO, Brazil"
+advisor = "Advisor: Dr. Elias Y. Ionashiro"
+
+[[education]]
+dates = "2009 – 2013"
+degree = "Licentiate Degree in Chemistry"
+institution = "Federal University of Mato Grosso — UFMT · Pontal do Araguaia, MT, Brazil"
+advisor = "Advisor: Dr. George Barbosa da Silva"

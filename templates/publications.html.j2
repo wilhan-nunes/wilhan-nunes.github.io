@@ -1,0 +1,64 @@
+{% extends "base.html.j2" %}
+{% from "macros.html.j2" import pub %}
+{% block content %}
+<header class="page-head">
+  <h1>Publications</h1>
+  {%- set scholar = profiles|selectattr("name", "equalto", "Google Scholar")|first %}
+  <p class="summary">{{ pub_counts.article }} peer-reviewed papers and {{ pub_counts.preprint }} preprints, {{ pub_counts.first_author }} as first author.
+    {%- if scholar %} For citation metrics, see my <a href="{{ scholar.url }}" target="_blank" rel="noopener">Google Scholar profile</a>.{% endif %}</p>
+</header>
+
+<div class="pub-tools" role="search">
+  <div class="filters" role="group" aria-label="Filter publications">
+    <button type="button" data-filter="all" aria-pressed="true">All <span>{{ publications|length }}</span></button>
+    <button type="button" data-filter="article" aria-pressed="false">Articles <span>{{ pub_counts.article }}</span></button>
+    <button type="button" data-filter="preprint" aria-pressed="false">Preprints <span>{{ pub_counts.preprint }}</span></button>
+    <button type="button" data-filter="first" aria-pressed="false">First author <span>{{ pub_counts.first_author }}</span></button>
+  </div>
+  <input type="search" id="pub-search" placeholder="Search title, author, journal…" aria-label="Search publications" />
+</div>
+<p class="pub-empty" hidden>No publications match.</p>
+
+{%- for year, entries in pubs_by_year %}
+<section class="year-group">
+  <h2 class="year">{{ year }}</h2>
+  <div class="pub-list">
+    {%- for p in entries %}
+    {{ pub(p) }}
+    {%- endfor %}
+  </div>
+</section>
+{%- endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(() => {
+  const buttons = [...document.querySelectorAll('.filters button')];
+  const search = document.getElementById('pub-search');
+  const pubs = [...document.querySelectorAll('.pub')];
+  const groups = [...document.querySelectorAll('.year-group')];
+  const empty = document.querySelector('.pub-empty');
+  const hashFilter = { '#preprints': 'preprint', '#articles': 'article', '#first': 'first' };
+  let filter = hashFilter[location.hash] || 'all';
+
+  function apply() {
+    const q = search.value.trim().toLowerCase();
+    buttons.forEach(b => b.setAttribute('aria-pressed', b.dataset.filter === filter));
+    let shown = 0;
+    pubs.forEach(p => {
+      const okType = filter === 'all' || (filter === 'first' ? p.dataset.first : p.dataset.type === filter);
+      const ok = okType && (!q || p.textContent.toLowerCase().includes(q));
+      p.hidden = !ok;
+      shown += ok;
+    });
+    groups.forEach(g => { g.hidden = !g.querySelector('.pub:not([hidden])'); });
+    empty.hidden = shown > 0;
+  }
+
+  buttons.forEach(b => b.addEventListener('click', () => { filter = b.dataset.filter; apply(); }));
+  search.addEventListener('input', apply);
+  apply();
+})();
+</script>
+{% endblock %}

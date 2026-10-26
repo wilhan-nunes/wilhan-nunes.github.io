@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Generate a print-ready PDF from index.html."""
+"""Generate a print-ready PDF from cv.html (the full single-page CV)."""
 
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 
-HTML_INPUT = Path("index.html").resolve()
+HTML_INPUT = Path("cv.html").resolve()
 PDF_OUTPUT = Path("Wilhan_Nunes_CV.pdf")
 
 

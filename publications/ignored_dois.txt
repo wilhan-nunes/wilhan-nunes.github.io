@@ -1,0 +1,2 @@
+# DOIs from ORCID that should never be added to the CV (one per line).
+# Closing an ORCID sync pull request without merging appends its DOIs here.

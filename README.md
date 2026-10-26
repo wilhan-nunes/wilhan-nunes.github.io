@@ -4,42 +4,72 @@ Source for my academic CV website: **[wilhan-nunes.github.io](https://wilhan-nun
 
 ## What's here
 
-- `index.html` — Single-page CV (bio, projects, experience, skills, education)
-- `publications/*.bib` — One BibTeX file per publication (source of truth)
-- `build_publications.py` — Parses BibTeX files and injects the publications section into `index.html`
-- `build_pdf.py` — Renders `index.html` to `Wilhan_Nunes_CV.pdf` via headless Chromium
+| Path | What it is |
+|---|---|
+| `content/cv.toml` | All hand-written CV content: profile, research, experience, education, skills |
+| `publications/*.bib` | One BibTeX file per publication (source of truth for publications) |
+| `templates/`, `static/style.css` | Jinja2 page templates and the shared stylesheet |
+| `tools/*.html` | Self-contained single-file tools, listed automatically on `tools.html` |
+| `build_site.py` | Renders `index.html`, `research.html`, `experience.html`, `publications.html`, `tools.html`, `cv.html` |
+| `build_pdf.py` | Renders `cv.html` to `Wilhan_Nunes_CV.pdf` (headless Chromium) |
+| `build_docx.py` | Writes an editable Word CV to `_private/Wilhan_Nunes_CV.docx` |
+
+`_private/` is kept in the repository but is never published on the site (Jekyll skips
+underscore paths, and `_config.yml` excludes it explicitly). The site doesn't link to it.
 
 ## Local setup
 
 ```bash
-pip install "bibtexparser<2" jinja2 playwright
+pip install -r requirements.txt
 playwright install chromium
 ```
 
 ## Rebuilding
 
 ```bash
-python build_publications.py   # update publications in index.html
-python build_pdf.py            # regenerate PDF
+python build_site.py   # all HTML pages
+python build_pdf.py    # Wilhan_Nunes_CV.pdf (from cv.html)
+python build_docx.py   # _private/Wilhan_Nunes_CV.docx
 ```
 
-CI runs both automatically on every push to `main` and commits the updated files.
+CI (`.github/workflows/build.yml`) runs all three on every push to `main`, after fetching any
+missing `.bib` files, and commits the results.
+
+## Editing content
+
+Edit `content/cv.toml` and push. Inline `<strong>`/`<em>` tags are allowed in text fields.
+To change how your name is matched for bolding in author lists, edit `person.author_aliases`.
 
 ## Adding a publication
 
-1. Add the new DOI to `publications/doi_list.txt`
-2. Run `bash publications/fetch_bibs.sh publications/doi_list.txt` locally — fetches and formats the `.bib` file
-3. Commit and push the new `.bib` file and updated `doi_list.txt`
-4. CI automatically runs `build_publications.py` and `build_pdf.py`, and commits the updated `index.html` and PDF back to the repo
+You can add a publication in any of three ways:
 
-### Syncing from ORCID
+1. **Drop a `.bib` file** into `publications/` (one entry per file, named after the DOI with `/` → `_`) and push.
+2. **Write the DOI** on a new line in `publications/doi_list.txt` and push. CI downloads the `.bib`.
+3. **ORCID / OpenAlex sync**: `.github/workflows/orcid-sync.yml` checks ORCID (`0000-0002-0609-6678`) and
+   OpenAlex (author `A5004018161`) every Monday, or run it by hand from the Actions tab. New works are fetched
+   into a pull request titled *New publications from ORCID / OpenAlex*, and each DOI is tagged with its source.
+   OpenAlex datasets, software, dissertations and Zenodo/figshare mirrors are skipped. OpenAlex can still
+   misattribute works or list conference abstracts, so check anything tagged only `[OpenAlex]`.
+   - **Merge** the pull request to approve.
+   - **Close** it to reject. `orcid-reject.yml` adds those DOIs to `publications/ignored_dois.txt` so they aren't suggested again.
 
-`publications/fetch_orcid.py` lists the works on the ORCID record and reports DOIs not yet in the repo (checks `publications/` and `publications/superseded_preprints/`):
+   For the sync to open pull requests, turn on *Settings → Actions → General → Allow GitHub Actions to create and approve pull requests*.
+   Optional: add an `OPENALEX_API_KEY` repository secret (free key at openalex.org/settings/api) so the sync doesn't
+   share OpenAlex's anonymous daily allowance.
+
+When a preprint is published, move its `.bib` and DOI to `publications/superseded_preprints/`.
+The build ignores that folder, and ORCID sync won't suggest the preprint again.
+
+You can also run the ORCID / OpenAlex check locally (`--openalex ""` skips OpenAlex):
 
 ```bash
-python publications/fetch_orcid.py           # dry run: show new DOIs
+python publications/fetch_orcid.py           # dry run: show new DOIs from both sources
 python publications/fetch_orcid.py --write   # append them to doi_list.txt
 python publications/fetch_orcid.py --fetch   # append + run fetch_bibs.sh
 ```
 
-Preprints are tagged `[preprint]`. Review them before fetching, since a preprint may already be in the CV as its published version.
+## Adding a tool
+
+Put a self-contained `.html` file in `tools/`. Its `<title>` and
+`<meta name="description" content="…">` become the card on the Tools page. The Tools page is marked `noindex`.
