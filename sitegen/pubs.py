@@ -85,8 +85,11 @@ def parse_bibs(folder: str | Path, aliases: list[str]) -> list[dict]:
     for bib_file in sorted(Path(folder).glob("*.bib")):
         parser = BibTexParser()
         parser.customization = convert_to_unicode
-        with open(bib_file, encoding="utf-8") as f:
-            db = bibtexparser.load(f, parser=parser)
+        text = bib_file.read_text(encoding="utf-8")
+        # doi.org writes months as bare macros (month=Sept); anything other than
+        # the standard jan..dec is an undefined string to bibtexparser, so brace it.
+        text = re.sub(r"(\bmonth\s*=\s*)([A-Za-z]+)", r"\1{\2}", text, flags=re.I)
+        db = bibtexparser.loads(text, parser=parser)
         for e in db.entries:
             doi = e.get("doi", "").strip()
             journal = clean_latex(e.get("journal", e.get("booktitle", "")))

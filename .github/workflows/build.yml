@@ -8,6 +8,12 @@ on:
 permissions:
   contents: write               # needed to commit regenerated static files
 
+# Pushes in quick succession (e.g. a commit, then a PR merge) would otherwise
+# build in parallel and the older run's push gets rejected.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     if: github.actor != 'github-actions[bot]'
@@ -47,4 +53,5 @@ jobs:
           git add index.html research.html experience.html publications.html tools.html cv.html \
                   Wilhan_Nunes_CV.pdf _private publications
           git diff --cached --quiet || git commit -m "chore: rebuild site, pdf and docx [skip ci]"
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
           git push
