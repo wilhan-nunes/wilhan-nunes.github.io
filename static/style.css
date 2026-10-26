@@ -11,8 +11,9 @@
   --line:      #d5dce6;
   --badge:     #dbeafe;
   --badge-ink: #1e40af;
-  --pre:       #fef3c7;
-  --pre-ink:   #854d0e;
+  --pre:       #e9f5f3;
+  --pre-ink:   #0f6b63;
+  --pre-line:  #9fd2cb;
   --serif: 'Source Serif 4', Georgia, serif;
   --sans:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --mono:  'DM Mono', ui-monospace, monospace;
@@ -30,8 +31,9 @@
   --line:      #2a2e37;
   --badge:     #1c2d48;
   --badge-ink: #a9c8f0;
-  --pre:       #3a2e12;
-  --pre-ink:   #f2c46d;
+  --pre:       #11302d;
+  --pre-ink:   #82d3c8;
+  --pre-line:  #23574f;
   color-scheme: dark;
 }
 
@@ -250,11 +252,11 @@ main > section:nth-child(4) { animation-delay: .18s; }
   margin-left: .35rem; word-break: break-all;
 }
 .badge {
-  display: inline-block; vertical-align: .1em;
-  font-family: var(--mono); font-size: .62rem; letter-spacing: .06em; text-transform: uppercase;
-  border-radius: 3px; padding: .05rem .4rem; margin-left: .35rem;
+  display: inline-block; vertical-align: .1em; white-space: nowrap;
+  font-family: var(--sans); font-size: .66rem; font-weight: 500; line-height: 1.5;
+  border: 1px solid transparent; border-radius: 999px; padding: 0 .5rem; margin-left: .35rem;
 }
-.badge-preprint { background: var(--pre); color: var(--pre-ink); }
+.badge-preprint { background: var(--pre); color: var(--pre-ink); border-color: var(--pre-line); }
 strong.me { font-weight: 600; }
 
 .pub-tools {
@@ -386,7 +388,7 @@ strong.me { font-weight: 600; }
 @media print {
   :root {
     --bg: #fff; --surface: #eef1f5; --ink: #111; --body: #2b2b33; --muted: #5d5d66;
-    --accent: #1e5fa8; --line: #d5dce6; --pre: #fef3c7; --pre-ink: #854d0e;
+    --accent: #1e5fa8; --line: #d5dce6; --pre: #e9f5f3; --pre-ink: #0f6b63; --pre-line: #9fd2cb;
   }
   html, body { background: #fff; font-size: 10pt; line-height: 1.45; display: block; }
   .site-header, .site-footer, .cv-actions, .skip, .theme-toggle { display: none !important; }
