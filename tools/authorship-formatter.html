@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Authors and Affiliations Formatter</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f2f6;
+      color: #262730;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    h1 { font-size: 1.9rem; font-weight: 700; margin-bottom: .4rem; }
+    h2 { font-size: 1.2rem; font-weight: 600; margin: 1.4rem 0 .5rem; }
+    h3 { font-size: 1rem; font-weight: 600; margin: 1.2rem 0 .4rem; }
+
+    .subtitle { color: #555; font-size: .9rem; margin-bottom: 1rem; }
+    .version  { color: #888; font-size: .8rem; margin-bottom: 1.2rem; }
+
+    /* ── upload area ── */
+    .upload-area {
+      border: 2px dashed #aab;
+      border-radius: 8px;
+      padding: 1.4rem;
+      text-align: center;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color .2s;
+      margin-bottom: 1.2rem;
+    }
+    .upload-area:hover { border-color: #ff4b4b; }
+    .upload-area input[type=file] { display: none; }
+    .upload-area label { cursor: pointer; color: #ff4b4b; font-weight: 600; }
+    .upload-area p { color: #666; font-size: .88rem; margin-top: .3rem; }
+
+    /* ── table editor ── */
+    .table-wrap {
+      overflow-x: auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      margin-bottom: 1.2rem;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: .88rem;
+    }
+
+    thead tr { background: #f7f7f9; }
+    th, td {
+      border: 1px solid #e0e0e6;
+      padding: .45rem .6rem;
+      white-space: nowrap;
+    }
+    th { font-weight: 600; font-size: .82rem; color: #444; }
+
+    td input {
+      border: none;
+      outline: none;
+      width: 100%;
+      min-width: 100px;
+      font-size: .88rem;
+      background: transparent;
+      font-family: inherit;
+    }
+    td input:focus { background: #fffbe6; border-radius: 3px; }
+
+    .col-order { width: 60px; text-align: center; }
+    .col-del   { width: 40px; text-align: center; }
+
+    .btn-del {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #c00;
+      font-size: 1rem;
+      line-height: 1;
+    }
+    .btn-del:hover { color: #ff4b4b; }
+
+    /* ── toolbar ── */
+    .toolbar {
+      display: flex;
+      gap: .7rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.2rem;
+      align-items: center;
+    }
+
+    .btn {
+      padding: .45rem 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .88rem;
+      font-weight: 600;
+      transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: #ff4b4b; color: #fff; }
+    .btn-secondary { background: #e8e8ee; color: #333; }
+
+    /* ── output ── */
+    #output-section { display: none; }
+
+    .output-box {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.2rem 1.4rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      margin-bottom: 1rem;
+    }
+
+    .output-box sup { font-size: .72em; }
+    .output-box ul  { list-style: none; padding: 0; }
+    .output-box li  { margin-bottom: .35rem; font-size: .9rem; }
+
+    .html-source {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      font-family: "Fira Code", "Courier New", monospace;
+      font-size: .78rem;
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      white-space: pre;
+      margin-bottom: .6rem;
+    }
+
+    .copy-row {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .notice {
+      background: #e8f4fd;
+      border-left: 4px solid #3b82f6;
+      padding: .6rem .9rem;
+      border-radius: 4px;
+      font-size: .85rem;
+      color: #1e3a5f;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Authors and Affiliations Formatter</h1>
+  <p class="subtitle">Upload a TSV file containing author details to generate an HTML-formatted author list with superscripted affiliation numbers.</p>
+  <p class="version">Version: 2026.04.24</p>
+
+  <div class="notice">
+    The TSV must contain these columns (add more <strong>Affiliation</strong> columns as needed, numbered sequentially):
+    <strong>Order · First Name · Middle Name · Surname · Affiliation1 · Affiliation2 …</strong>
+  </div>
+
+  <!-- Upload -->
+  <div class="upload-area" id="drop-zone">
+    <input type="file" id="file-input" accept=".tsv,.txt" />
+    <label for="file-input">Browse files</label>
+    <p>or drag &amp; drop a .tsv file here</p>
+    <p id="file-name" style="margin-top:.5rem;color:#333;font-weight:600;"></p>
+  </div>
+
+  <!-- Editable table -->
+  <h2>Preview &amp; Edit</h2>
+  <div class="table-wrap">
+    <table id="data-table">
+      <thead id="table-head"></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn btn-secondary" id="btn-add-row">+ Add Row</button>
+    <button class="btn btn-secondary" id="btn-add-aff">+ Add Affiliation Column</button>
+    <button class="btn btn-primary"   id="btn-generate">Generate HTML</button>
+  </div>
+
+  <!-- Output -->
+  <div id="output-section">
+    <h2>Output</h2>
+    <div class="output-box" id="output-preview"></div>
+    <h3>HTML Source</h3>
+    <div class="html-source" id="html-source"></div>
+    <div class="copy-row">
+      <button class="btn btn-secondary" id="btn-copy">Copy HTML</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── default data ───────────────────────────────────────────────────────────────
+const DEFAULT_COLS = ["Order","First Name","Middle Name","Surname","Affiliation1","Affiliation2"];
+const DEFAULT_ROWS = [
+  ["1","Jane","","Smith","Dept. of Biology, University of Example, Springfield, USA",""],
+  ["2","John","A.","Doe","Dept. of Chemistry, University of Example, Springfield, USA","Institute of Science, Geneva, Switzerland"],
+  ["3","Maria","","Garcia","Institute of Science, Geneva, Switzerland",""],
+];
+
+// ── state ──────────────────────────────────────────────────────────────────────
+let columns = [...DEFAULT_COLS];
+let rows    = DEFAULT_ROWS.map(r => [...r]);
+
+// ── render ─────────────────────────────────────────────────────────────────────
+function renderTable() {
+  const head = document.getElementById("table-head");
+  const body = document.getElementById("table-body");
+
+  // header
+  head.innerHTML = "";
+  const tr = document.createElement("tr");
+  columns.forEach((col, ci) => {
+    const th = document.createElement("th");
+    th.textContent = col;
+    if (ci === 0) th.className = "col-order";
+    tr.appendChild(th);
+  });
+  const thDel = document.createElement("th");
+  thDel.className = "col-del";
+  tr.appendChild(thDel);
+  head.appendChild(tr);
+
+  // rows
+  body.innerHTML = "";
+  rows.forEach((row, ri) => {
+    const tr = document.createElement("tr");
+    columns.forEach((_, ci) => {
+      const td = document.createElement("td");
+      if (ci === 0) td.className = "col-order";
+      const inp = document.createElement("input");
+      inp.type  = "text";
+      inp.value = row[ci] ?? "";
+      inp.addEventListener("input", e => { rows[ri][ci] = e.target.value; });
+      td.appendChild(inp);
+      tr.appendChild(td);
+    });
+    const tdDel = document.createElement("td");
+    tdDel.className = "col-del";
+    const btn = document.createElement("button");
+    btn.className = "btn-del";
+    btn.title = "Delete row";
+    btn.textContent = "✕";
+    btn.addEventListener("click", () => { rows.splice(ri, 1); renderTable(); });
+    tdDel.appendChild(btn);
+    tr.appendChild(tdDel);
+    body.appendChild(tr);
+  });
+}
+
+// ── parse TSV ──────────────────────────────────────────────────────────────────
+function parseTSV(text) {
+  const lines = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n").filter(l => l.trim() !== "");
+  if (lines.length < 1) return;
+  columns = lines[0].split("\t").map(c => c.trim());
+  rows = lines.slice(1).map(line => {
+    const cells = line.split("\t");
+    // pad to column count
+    while (cells.length < columns.length) cells.push("");
+    return cells.map(c => c.trim());
+  });
+  renderTable();
+  document.getElementById("output-section").style.display = "none";
+}
+
+// ── format logic (mirrors Python) ─────────────────────────────────────────────
+function formatAuthorsAffiliations() {
+  const lowerCols = columns.map(c => c.toLowerCase().trim());
+  const idx = name => lowerCols.indexOf(name);
+
+  const iFirst   = idx("first name");
+  const iMiddle  = idx("middle name");
+  const iSurname = idx("surname");
+
+  // collect affiliation column indices
+  const affCols = [];
+  lowerCols.forEach((c, i) => { if (c.startsWith("affiliation")) affCols.push(i); });
+
+  if (iFirst === -1 || iSurname === -1) {
+    alert("TSV must have 'First Name' and 'Surname' columns.");
+    return null;
+  }
+
+  const affiliationsDict = {}; // affiliation text → number
+  let counter = 1;
+  const authors = [];
+
+  rows.forEach(row => {
+    const firstName  = (row[iFirst]  ?? "").trim();
+    const middleName = iMiddle >= 0 ? (row[iMiddle] ?? "").trim() : "";
+    const surname    = (row[iSurname] ?? "").trim();
+    const fullName   = [firstName, middleName, surname].filter(Boolean).join(" ");
+
+    const affs = affCols
+      .map(ci => (row[ci] ?? "").trim())
+      .filter(Boolean);
+
+    const indices = affs.map(aff => {
+      if (!(aff in affiliationsDict)) affiliationsDict[aff] = counter++;
+      return affiliationsDict[aff];
+    });
+
+    authors.push({ name: fullName, indices });
+  });
+
+  // sort by number
+  const affList = Object.entries(affiliationsDict)
+    .sort((a, b) => a[1] - b[1])
+    .map(([aff, num]) => ({ num, aff }));
+
+  return { authors, affList };
+}
+
+// ── generate HTML ──────────────────────────────────────────────────────────────
+function generateHTML() {
+  const result = formatAuthorsAffiliations();
+  if (!result) return;
+  const { authors, affList } = result;
+
+  const authorsStr = authors
+    .map(a => `${a.name}<sup>${a.indices.join(",")}</sup>`)
+    .join(", ");
+
+  const affsStr = affList
+    .map(({num, aff}) => `        <li><sup>${num}</sup> ${aff}</li>`)
+    .join("\n");
+
+  const html = `<html>
+<head>
+    <title>Authors and Affiliations</title>
+    <style>
+        sup { font-size: smaller; }
+        ul  { list-style-type: none; padding: 0; }
+        li  { margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <h2>Authors</h2>
+    <p>${authorsStr}</p>
+    <h2>Affiliations</h2>
+    <ul>
+${affsStr}
+    </ul>
+</body>
+</html>`;
+
+  // render preview
+  const preview = document.getElementById("output-preview");
+  preview.innerHTML = `
+    <h2>Authors</h2>
+    <p>${authorsStr}</p>
+    <h2>Affiliations</h2>
+    <ul>${affList.map(({num,aff}) => `<li><sup>${num}</sup> ${aff}</li>`).join("")}</ul>
+  `;
+
+  document.getElementById("html-source").textContent = html;
+  document.getElementById("output-section").style.display = "block";
+  document.getElementById("output-section").scrollIntoView({ behavior: "smooth" });
+
+  window._generatedHTML = html;
+}
+
+// ── event listeners ────────────────────────────────────────────────────────────
+document.getElementById("file-input").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById("file-name").textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = ev => parseTSV(ev.target.result);
+  reader.readAsText(file);
+});
+
+// drag & drop
+const dropZone = document.getElementById("drop-zone");
+dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.style.borderColor = "#ff4b4b"; });
+dropZone.addEventListener("dragleave", () => { dropZone.style.borderColor = ""; });
+dropZone.addEventListener("drop", e => {
+  e.preventDefault();
+  dropZone.style.borderColor = "";
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  document.getElementById("file-name").textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = ev => parseTSV(ev.target.result);
+  reader.readAsText(file);
+});
+
+document.getElementById("btn-add-row").addEventListener("click", () => {
+  rows.push(new Array(columns.length).fill(""));
+  renderTable();
+});
+
+document.getElementById("btn-add-aff").addEventListener("click", () => {
+  // find highest affiliation number
+  let max = 0;
+  columns.forEach(c => {
+    const m = c.toLowerCase().match(/^affiliation(\d+)$/);
+    if (m) max = Math.max(max, parseInt(m[1]));
+  });
+  const newCol = `Affiliation${max + 1}`;
+  columns.push(newCol);
+  rows.forEach(r => r.push(""));
+  renderTable();
+});
+
+document.getElementById("btn-generate").addEventListener("click", generateHTML);
+
+document.getElementById("btn-copy").addEventListener("click", () => {
+  if (!window._generatedHTML) return;
+  navigator.clipboard.writeText(window._generatedHTML).then(() => {
+    const btn = document.getElementById("btn-copy");
+    btn.textContent = "Copied!";
+    setTimeout(() => btn.textContent = "Copy HTML", 1800);
+  });
+});
+
+// ── init ───────────────────────────────────────────────────────────────────────
+renderTable();
+</script>
+</body>
+</html>
